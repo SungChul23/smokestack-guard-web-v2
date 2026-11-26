@@ -1,0 +1,60 @@
+/* 우하단 작은 "AI에게 묻기" 버튼([E-9]: 안에 작은 마스코트, 서랍 열리면 서랍 왼쪽 바깥으로 이동) */
+.launcher {
+  position: fixed;
+  right: 24px;
+  bottom: 44px;
+  z-index: 80;
+  height: 46px;
+  padding: 0 18px 0 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-pill);
+  background: var(--panel-solid);
+  color: var(--ink);
+  box-shadow: var(--shadow-panel);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  transition: transform var(--dur-fast) var(--ease-out), right var(--dur) var(--ease-out), border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.launcher:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  background: var(--panel-hover);
+}
+.launcher:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.launcherIcon {
+  flex-shrink: 0;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+}
+.launcherText {
+  white-space: nowrap;
+}
+
+/* 상세 서랍이 열리면 서랍 왼쪽 바깥(16px 여유)으로 옮겨 서랍을 절대 가리지 않는다 */
+.drawerOffset {
+  right: calc(min(560px, 100vw - 48px) + 40px);
+}
+@media (max-width: 1279px) and (min-width: 641px) {
+  .drawerOffset {
+    right: calc(min(50vw, 560px) + 28px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .launcher { transition: none; }
+  .launcher:hover { transform: none; }
+}
+@media (max-width: 640px) {
+  .hideMobile { display: none; }
+}

@@ -1,0 +1,562 @@
+/* 그래프 설정 창: 배경이 비치지 않는 완전 불투명(--panel-solid) 큰 중앙 모달 창.
+   2열 카드 배치와 넉넉한 행 높이로 빽빽함을 없애고, 모든 글자는 14px 이상을 유지한다. */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(5, 9, 14, 0.78);
+}
+
+:global(:root[data-theme="light"]) .backdrop {
+  background: rgba(15, 23, 42, 0.56);
+}
+
+.modal {
+  width: min(1320px, calc(100vw - 40px));
+  height: min(90dvh, 900px);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  background: var(--panel-solid);
+  color: var(--ink);
+  box-shadow: 0 28px 72px rgba(0, 0, 0, 0.54);
+  font-family: var(--font-sans);
+  overflow: hidden;
+  outline: none;
+}
+
+.head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 28px;
+  background: var(--panel-solid);
+  border-bottom: 1px solid var(--border);
+}
+
+.headTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 14px;
+  min-width: 0;
+}
+
+.headTitle strong {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.statusText {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.statusText[data-changed] {
+  color: var(--accent);
+}
+
+.close {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.close:hover {
+  border-color: var(--accent);
+  background: var(--panel-hover);
+}
+.close:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.toolbar {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 28px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.toolbarHint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.workspace {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+  background: var(--panel-solid);
+}
+
+.previewPane {
+  flex: 0 0 470px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 22px;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.previewHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.previewTitleWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.previewTitleWrap strong {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.previewBadge {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.previewSeries {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.previewChip {
+  padding: 6px 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border-strong);
+  background: var(--panel-solid);
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.previewChip[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-weak);
+  color: var(--accent);
+}
+.previewChip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.previewStage {
+  padding: 14px 12px 10px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--panel-solid);
+}
+
+.previewTip {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 22px 24px 36px;
+  background: var(--panel-solid);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+.card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.card h3 {
+  margin: 0 0 6px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+.card h4 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+.twoCol {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 28px;
+  align-items: start;
+}
+
+.threeCol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.colGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.subCard {
+  background: var(--panel-solid);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.hint {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn,
+.btnPrimary,
+.btnDanger,
+.small {
+  padding: 9px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-btn);
+  background: var(--panel-solid);
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.btnPrimary {
+  border-color: var(--accent);
+  background: var(--accent-weak);
+  color: var(--accent);
+}
+
+.btnDanger {
+  border-color: color-mix(in srgb, var(--lv-risk) 45%, var(--border-strong));
+  color: var(--ink);
+}
+
+.btn:hover:not(:disabled),
+.btnPrimary:hover:not(:disabled),
+.small:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--panel-hover);
+}
+
+.btnDanger:hover:not(:disabled) {
+  border-color: var(--lv-risk);
+  background: color-mix(in srgb, var(--lv-risk) 12%, var(--panel-solid));
+}
+
+.btn:focus-visible,
+.btnPrimary:focus-visible,
+.btnDanger:focus-visible,
+.small:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn:disabled,
+.btnPrimary:disabled,
+.btnDanger:disabled,
+.small:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.small {
+  padding: 6px 12px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(100px, 0.95fr) minmax(100px, 1.35fr) 58px;
+  align-items: center;
+  gap: 12px;
+  min-height: 42px;
+  font-size: 15px;
+}
+
+.colorRow {
+  display: grid;
+  grid-template-columns: minmax(96px, 1fr) auto 76px auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  font-size: 15px;
+}
+
+.subCard .colorRow {
+  grid-template-columns: minmax(80px, 1fr) auto auto;
+  gap: 8px;
+}
+
+.subCard .hex {
+  display: none;
+}
+
+.row label,
+.colorRow label {
+  color: var(--ink);
+  line-height: 1.35;
+}
+
+.row[data-changed] label,
+.colorRow[data-changed] label {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.row input[type="range"] {
+  width: 100%;
+  height: 22px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.colorRow input[type="color"] {
+  width: 44px;
+  height: 32px;
+  padding: 2px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--panel-solid);
+  cursor: pointer;
+}
+
+.hex {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.row .value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--ink);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 42px;
+  font-size: 15px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.toggle[data-changed] span {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.toggle input {
+  flex: none;
+  width: 19px;
+  height: 19px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.paste {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.paste textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--panel-solid);
+  color: var(--ink);
+  padding: 12px 14px;
+  font: 14px/1.5 var(--font-mono);
+}
+
+.paste textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.pasteActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.statusNote {
+  margin: 4px 0 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--panel-solid);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+@media (max-width: 1260px) {
+  .grid,
+  .threeCol {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1080px) {
+  .workspace {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .previewPane {
+    flex: none;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+    overflow: visible;
+    padding: 16px 20px;
+  }
+
+  .body {
+    overflow: visible;
+    flex: none;
+  }
+
+  .twoCol {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .backdrop {
+    padding: 0;
+  }
+
+  .modal {
+    width: 100%;
+    height: 100dvh;
+    border-radius: 0;
+    border: 0;
+  }
+
+  .head {
+    padding: 16px 18px;
+  }
+
+  .toolbar {
+    padding: 14px 18px;
+  }
+
+  .body {
+    padding: 16px 18px 28px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .colorRow {
+    grid-template-columns: minmax(80px, 1fr) auto auto;
+  }
+
+  .hex {
+    display: none;
+  }
+}

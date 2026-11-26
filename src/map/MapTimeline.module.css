@@ -1,0 +1,242 @@
+/* 지도 아래 타임라인 바: 지도를 가리지 않고 아래 한 줄에 배치, 글자 최소 14px, 과거 시점 주황 띠 */
+.wrap {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pastBanner {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid color-mix(in srgb, var(--lv-warn) 65%, transparent);
+  background: color-mix(in srgb, var(--lv-warn) 16%, var(--bg));
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.pastDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--lv-warn);
+  flex-shrink: 0;
+}
+
+.pastText {
+  color: var(--lv-warn);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.scopeNote {
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--r-inner);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  min-width: 0;
+}
+
+.wrap[data-past="true"] .bar {
+  border-color: color-mix(in srgb, var(--lv-warn) 55%, var(--border-strong));
+}
+
+.stepBtn,
+.playBtn {
+  flex-shrink: 0;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: var(--r-btn);
+  border: 1px solid var(--border);
+  background: var(--panel-solid);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.stepBtn:hover:not(:disabled),
+.playBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.playBtn[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-weak);
+  color: var(--accent);
+}
+.stepBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.stepBtn:focus-visible,
+.playBtn:focus-visible,
+.latestBtn:focus-visible,
+.mobileTimeBtn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.sliderWrap {
+  flex: 1;
+  min-width: 60px;
+  display: flex;
+  align-items: center;
+}
+
+.slider {
+  width: 100%;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.wrap[data-past="true"] .slider {
+  accent-color: var(--lv-warn);
+}
+
+.timeText {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.timeShort {
+  display: none;
+}
+
+.latestBtn {
+  flex-shrink: 0;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border-strong);
+  background: var(--panel-solid);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.latestBtn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.latestBtn:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+/* 휴대폰 전용 시각 버튼 + 길게 누르기 재생 메뉴 */
+.mobileTimeBtn {
+  flex: 1;
+  min-width: 0;
+  min-height: 34px;
+  padding: 2px 10px;
+  border-radius: var(--r-btn);
+  border: 1px solid var(--border);
+  background: var(--panel-solid);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.mobileHint {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.mobileMenu {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  padding: 6px;
+  border-radius: var(--r-panel);
+  border: 1px solid var(--border-strong);
+  background: var(--panel-solid);
+  box-shadow: var(--shadow-panel);
+}
+
+.mobileMenuItem {
+  min-height: 40px;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: var(--r-btn);
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.mobileMenuItem:hover {
+  background: var(--panel-hover);
+}
+
+@media (max-width: 1120px) {
+  .bar {
+    padding: 5px 8px;
+    gap: 6px;
+  }
+  .stepBtn,
+  .playBtn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+  }
+  .sliderWrap {
+    min-width: 44px;
+  }
+  .timeFull {
+    display: none;
+  }
+  .timeShort {
+    display: inline;
+  }
+  .latestBtn {
+    min-height: 32px;
+    padding: 0 10px;
+  }
+}
+
+@media (max-width: 640px) {
+  .scopeNote {
+    display: none;
+  }
+}

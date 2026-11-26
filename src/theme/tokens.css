@@ -1,0 +1,191 @@
+/* 디자인 토큰 ([C] 색상·타이포·모양 + [추가 3] 움직임 체계 + 2단계 보완 [1] 크기 체계).
+   기본은 다크, <html data-theme="light">이면 라이트.
+   초록(--lv-ok)은 "정상" 상태에만 사용하고, 브랜드·선택·링크·강조는 하늘색(--accent)을 쓴다. */
+
+:root {
+  /* ── 면·테두리·글자 (다크 기본) ── */
+  --bg: #0b0f14;
+  --panel: rgba(20, 26, 34, 0.78);
+  --panel-solid: #141a22;
+  --panel-elevated: rgba(24, 32, 42, 0.96);
+  --panel-hover: rgba(255, 255, 255, 0.05);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.18);
+
+  --text: #e6edf3;
+  --text-2: #9aa7b4;
+  --text-3: #7c8a98;
+
+  /* 브랜드·선택·강조 (초록 금지) */
+  --accent: #38bdf8;
+  --accent-weak: rgba(56, 189, 248, 0.15);
+  --accent-hover: #7dd3fc;
+
+  /* ── 지도 색 (다크) ── */
+  --map-land: #1a2129;
+  --map-sea: #0e141b;
+  --map-line: #2a3441;
+  --map-label: #7d8a97;
+  --map-ink: #e6edf3;
+  --map-select: #38bdf8;
+
+  /* ── 상태 단계 색 (모양 + 글자 함께 사용) ── */
+  --lv-ok: #4ade80;
+  --lv-caution: #facc15;
+  --lv-warn: #fb923c;
+  --lv-risk: #ef4444;
+  --lv-exceed: #e11d74;
+  --lv-exceed-ring: rgba(225, 29, 116, 0.34);
+  --lv-none: #6b7785;
+
+  /* ── 기존 컴포넌트 호환 별칭 (3~5단계 교체 전까지 유지) ── */
+  --ink: var(--text);
+  --muted: var(--text-2);
+  --line: var(--border);
+  --series-2: #a78bfa;
+  --chart-bg: #0a110f;
+  --chart-grid: #1b2430;
+  --stage-bg: #0e141b;
+  --stage-grid: #1f2937;
+  --siren-blue: #38bdf8;
+  --edge-light: #38bdf8;
+  --gap-from: #6b7785;
+  --gap-to: #1a2129;
+  --gap-fill-a: 0.36;
+  --gap-fill-b: 0.12;
+  color-scheme: dark;
+
+  /* ── 유리·모서리·그림자 ── */
+  --blur-panel: blur(12px);
+  --r-panel: 12px;
+  --r-card: 12px;
+  --r-btn: 8px;
+  --r-inner: 8px;
+  --r-pill: 999px;
+  --shadow-panel: 0 12px 32px rgba(0, 0, 0, 0.44);
+  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.3);
+
+  /* ── 타이포그래피 ([1] 크기 체계: 본문 16px, 보조 최소 14px, 제목 20px, 워드마크 22px, 단계 개수 32px) ── */
+  --font-sans: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --fs-xs: 14px;
+  --fs-sm: 14px;
+  --fs-base: 16px;
+  --fs-md: 18px;
+  --fs-lg: 20px;
+  --fs-brand: 22px;
+  --fs-stat: 24px;
+  --fs-xl: 32px;
+  --fs-count: 32px;
+  --lh-body: 1.5;
+  --lh-num: 1.1;
+
+  /* ── 움직임 체계 ([추가 3]) ── */
+  --dur-fast: 150ms;
+  --dur: 250ms;
+  --dur-slow: 600ms;
+  --dur-draw: 800ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@media (max-width: 640px) {
+  :root {
+    --fs-base: 15px;
+    --fs-lg: 18px;
+    --fs-brand: 18px;
+    --fs-count: 28px;
+    --fs-xl: 28px;
+  }
+}
+
+:root[data-theme="light"] {
+  --bg: #f5f7fa;
+  --panel: rgba(255, 255, 255, 0.84);
+  --panel-solid: #ffffff;
+  --panel-elevated: rgba(255, 255, 255, 0.98);
+  --panel-hover: rgba(15, 23, 42, 0.05);
+  --border: rgba(15, 23, 42, 0.11);
+  --border-strong: rgba(15, 23, 42, 0.2);
+
+  --text: #0f172a;
+  --text-2: #475569;
+  --text-3: #64748b;
+
+  --accent: #0284c7;
+  --accent-weak: rgba(2, 132, 199, 0.12);
+  --accent-hover: #0369a1;
+
+  --map-land: #f8fafc;
+  --map-sea: #e2eaf2;
+  --map-line: #cbd5e1;
+  --map-label: #64748b;
+  --map-ink: #0f172a;
+  --map-select: #0284c7;
+
+  --lv-ok: #16a34a;
+  --lv-caution: #a16207;
+  --lv-warn: #c2410c;
+  --lv-risk: #dc2626;
+  --lv-exceed: #be123c;
+  --lv-exceed-ring: rgba(190, 18, 60, 0.28);
+  --lv-none: #64748b;
+
+  --ink: var(--text);
+  --muted: var(--text-2);
+  --line: var(--border);
+  --series-2: #6d28d9;
+  --chart-bg: #0f1a17;
+  --chart-grid: #233530;
+  --stage-bg: #e2eaf2;
+  --stage-grid: #cbd5e1;
+  --siren-blue: #0284c7;
+  --edge-light: #0284c7;
+  --gap-from: #64748b;
+  --gap-to: #e2e8f0;
+  --gap-fill-a: 0.22;
+  --gap-fill-b: 0.08;
+  color-scheme: light;
+
+  --shadow-panel: 0 12px 32px rgba(15, 23, 42, 0.14);
+  --shadow-card: 0 6px 20px rgba(15, 23, 42, 0.09);
+}
+
+/* 화면 효과 끄기 · 탭 숨김 · OS 움직임 줄이기: 모든 전환과 애니메이션을 멈춘다 */
+:root[data-effects="off"],
+:root[data-doc-hidden="true"] {
+  --dur-fast: 0ms;
+  --dur: 0ms;
+  --dur-slow: 0ms;
+  --dur-draw: 0ms;
+}
+
+:root[data-effects="off"] *,
+:root[data-effects="off"] *::before,
+:root[data-effects="off"] *::after,
+:root[data-doc-hidden="true"] *,
+:root[data-doc-hidden="true"] *::before,
+:root[data-doc-hidden="true"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  animation-play-state: paused !important;
+  transition-duration: 0ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur: 0ms;
+    --dur-slow: 0ms;
+    --dur-draw: 0ms;
+  }
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+}

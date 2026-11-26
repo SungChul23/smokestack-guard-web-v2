@@ -1,0 +1,109 @@
+/* 공지 롤링 배너 ([2] 경고 띠): 높이 56px, 글자 18px, 항목 사이 간격 24px. */
+.banner {
+  --nb-h: 56px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-height: var(--nb-h);
+  padding: 0 16px 0 20px;
+  border: 1px solid color-mix(in srgb, var(--nb-color, var(--lv-exceed)) 42%, var(--border));
+  border-left: 5px solid var(--nb-color, var(--lv-exceed));
+  border-radius: var(--r-panel);
+  background: var(--panel-solid);
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.4;
+  animation: bannerSiren 1.4s ease-in-out infinite;
+}
+.tag {
+  flex: none;
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  background: var(--nb-color, var(--lv-exceed));
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  animation: bannerTagSiren 1.15s ease-in-out infinite;
+}
+@keyframes bannerSiren {
+  0%, 100% {
+    border-left-color: var(--lv-exceed);
+    box-shadow: inset 0 0 0 0 transparent;
+  }
+  50% {
+    border-left-color: #3d7bff;
+    box-shadow: inset 4px 0 18px -6px rgba(61, 123, 255, 0.35);
+  }
+}
+@keyframes bannerTagSiren {
+  0%, 100% {
+    background: var(--lv-exceed);
+    box-shadow: 0 0 10px -2px var(--lv-exceed);
+  }
+  50% {
+    background: #3d7bff;
+    box-shadow: 0 0 10px -2px #3d7bff;
+  }
+}
+:global(:root[data-effects="off"]) .banner,
+:global(:root[data-effects="off"]) .tag,
+:global(:root[data-doc-hidden="true"]) .banner,
+:global(:root[data-doc-hidden="true"]) .tag {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .banner, .tag { animation: none !important; }
+}
+.viewport { position: relative; flex: 1 1 auto; min-width: 0; height: var(--nb-h); overflow: hidden; }
+.track { display: block; transition: transform 0.45s ease; }
+.track[data-jump] { transition: none; }
+.item {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  height: var(--nb-h);
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 18px;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.item:hover .text { text-decoration: underline; }
+.item:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; border-radius: 8px; }
+.level { flex: none; font-weight: 800; color: var(--lv-exceed); white-space: nowrap; }
+.item[data-level="risk"] .level { color: var(--lv-risk); }
+.item[data-level="warn"] .level { color: var(--lv-warn); }
+.text { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.ratio { flex: none; margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 700; font-size: 18px; line-height: 1.1; color: var(--ink); }
+.count { flex: none; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.nav {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 20px;
+  cursor: pointer;
+}
+.nav:hover { color: var(--ink); background: var(--accent-weak); }
+.nav:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+@media (prefers-reduced-motion: reduce) { .track { transition: none; } }
+@media (max-width: 640px) {
+  .banner { --nb-h: 48px; gap: 12px; padding: 0 12px 0 14px; font-size: 15px; }
+  .item { gap: 12px; font-size: 15px; }
+  .count, .ratio { display: none; }
+}
