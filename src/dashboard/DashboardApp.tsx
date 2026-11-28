@@ -13,8 +13,8 @@ import ChartStylePanel from "./ChartStylePanel";
 import type { SheetSnap } from "./MobileBottomSheet";
 import MySitesPanel from "./MySitesPanel";
 import NoticeBanner from "./NoticeBanner";
-import NoticeSticker from "./NoticeSticker";
-import { buildNotices, type Notice } from "./notices";
+import NoticesPage from "./NoticesPage";
+import { buildRisingNotices, type Notice } from "./notices";
 import Shell, { type QuickSearchItem, type ShellProps } from "./Shell";
 import SiteDetailDrawer from "./SiteDetailDrawer";
 import { shortRegion } from "./siteMetrics";
@@ -49,6 +49,7 @@ export default function DashboardApp({ load, accessToken, ...props }: Props) {
   const favoriteNotice = useSelection((s) => s.favoriteNotice);
   const [slotPick, setSlotPick] = useState<number | null>(null); // null = 최신
   const [settingsOpen, setSettingsOpen] = useState(false); // 그래프 설정 패널
+  const [noticesPageOpen, setNoticesPageOpen] = useState(false); // 전체 공지 페이지
   const [agentOpen, setAgentOpen] = useState(false);
   const [agentSiteContext, setAgentSiteContext] = useState<AgentSiteContext | null>(null);
   const [mobileSheetSnap, setMobileSheetSnap] = useState<SheetSnap>("collapsed");
@@ -90,17 +91,11 @@ export default function DashboardApp({ load, accessToken, ...props }: Props) {
   );
   const latestCounts = useMemo(() => (ready ? countByLevel(latestStates) : null), [ready, latestStates]);
 
-  // 공지는 지도 시간대 슬라이더가 아니라 최신 데이터(마지막 칸)를 현재 상태로 본다.
+  // 상단 LIVE 공지는 이미 초과된 사업장이 아닌, 최근 6시간 상승 추세인 사업장을 보여 준다.
   const favorites = useSelection((s) => s.favorites);
   const selectSite = useSelection((s) => s.selectSite);
-  const rolling = useMemo(() => (ready ? buildNotices(ready.sites, ready.day, { levels: ["exceed"] }) : []), [ready]);
-  const sticker = useMemo(
-    () => (ready ? buildNotices(ready.sites, ready.day, { levels: ["warn", "risk", "exceed"], only: new Set(favorites) }) : []),
-    [ready, favorites],
-  );
+  const risingNotices = useMemo(() => (ready ? buildRisingNotices(ready.sites, ready.day) : []), [ready]);
   const pick = (n: Notice) => selectSite(n.siteId, n.stackCode);
-  // 그래프 설정을 만져 볼 예시: 지금 초과인 사업장 중 첫 곳(없으면 첫 사업장)
-  const sample = rolling[0] ?? (ready?.sites[0] ? { siteId: ready.sites[0].id, stackCode: ready.sites[0].stacks[0]?.code ?? null } : null);
 
   const favoriteStates = useMemo(() => {
     if (!favorites.length) return [];
@@ -131,6 +126,7 @@ export default function DashboardApp({ load, accessToken, ...props }: Props) {
     // 준비된 화면과 같은 구조로 둔다(데이터가 들어올 때 Shell이 새로 만들어지지 않게)
     return (
       <>
+        {null}
         {null}
         {null}
         <Shell
@@ -180,7 +176,18 @@ export default function DashboardApp({ load, accessToken, ...props }: Props) {
       <ChartStylePanel
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
-        onPickSample={sample ? () => selectSite(sample.siteId, sample.stackCode) : undefined}
+      />
+      <NoticesPage
+        open={noticesPageOpen}
+        items={risingNotices}
+        sites={ready.sites}
+        day={ready.day}
+        latestMs={latestMs}
+        freshnessNowMs={freshnessNowMs}
+        favoriteIds={favorites}
+        mode="rising"
+        onClose={() => setNoticesPageOpen(false)}
+        onPick={pick}
       />
       <Shell
         {...props}
@@ -195,12 +202,12 @@ export default function DashboardApp({ load, accessToken, ...props }: Props) {
         mobileSheetSnap={mobileSheetSnap}
         onMobileSheetSnapChange={setMobileSheetSnap}
         notices={
-          rolling.length || sticker.length ? (
-            <>
-              <NoticeBanner items={rolling} onPick={pick} />
-              <NoticeSticker items={sticker} onPick={pick} />
-            </>
-          ) : undefined
+          <NoticeBanner
+            items={risingNotices}
+            onPick={pick}
+            onViewAll={() => setNoticesPageOpen(true)}
+            ariaLabel="상승 추세 실시간 공지"
+          />
         }
         map={
           <MapPanel

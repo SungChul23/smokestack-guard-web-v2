@@ -33,7 +33,7 @@ export interface ShellProps {
   latestMs?: number | null;
   /** 신선도 계산 기준 시각(ms). 미리보기에서만 고정 오프셋을 넣는다 */
   freshnessNowMs?: number;
-  /** 최신 전국 단계별 사업장 수 (로고 연기 색 & 머리 종 배지용) */
+  /** 최신 전국 단계별 사업장 수 (로고 연기 색용) */
   latestCounts?: { exceed: number; risk: number } | null;
   /** 현재 지도 시점의 단계별 사업장 수 (2단계 4카드 유지용) */
   counts?: Record<"caution" | "warn" | "risk" | "exceed", number> | null;
@@ -192,19 +192,6 @@ export default function Shell({
     onSelectSearchItem?.(siteId);
   };
 
-  const handleBellClick = () => {
-    if (isMobile) {
-      onClearSelection?.();
-      setSheetTab("alerts");
-      setSheetSnap("half");
-      return;
-    }
-    if (isTablet) {
-      setTabletTab("alerts");
-    }
-    alertsScrollRef.current?.scrollTo?.({ top: 0, behavior: "smooth" });
-  };
-
   const handleMobileNav = (key: MobileNavKey) => {
     if (key === "map") {
       setMobileMenuOpen(false);
@@ -256,8 +243,13 @@ export default function Shell({
     }
   };
 
+  const hasStatusFilter = statusFilter.length > 0;
   const cardsNode = (
-    <section className={isMobile ? styles.mobileCards : styles.cards} aria-label="단계별 굴뚝 수">
+    <section
+      className={isMobile ? styles.mobileCards : styles.cards}
+      data-has-filter={hasStatusFilter ? "true" : undefined}
+      aria-label="단계별 굴뚝 수"
+    >
       {ALERT_LEVELS.map((lv) => {
         const val = counts ? counts[lv.key as keyof typeof counts] : null;
         const isZero = val === 0;
@@ -273,7 +265,7 @@ export default function Shell({
             data-siren={isExceedActive ? "true" : undefined}
             aria-pressed={active}
             onClick={() => toggleStatus(lv.key)}
-            title={`${lv.label} 단계만 걸러서 보기`}
+            title={active ? `${lv.label} 단계 선택 해제` : `${lv.label} 단계만 걸러서 보기`}
           >
             <div className={styles.cardMeta}>
               <div className={styles.cardLabel}>
@@ -286,8 +278,11 @@ export default function Shell({
                   </span>
                 )}
               </div>
-              <div className={styles.cardNote}>
-                ≥{lv.min}%{pastTimeLabel ? " · 최신" : ""}
+              <div className={styles.cardNoteRow}>
+                <span className={styles.cardNote}>
+                  ≥{lv.min}%{pastTimeLabel ? " · 최신" : ""}
+                </span>
+                {active && <span className={styles.cardSelectedBadge}>✓ 선택됨</span>}
               </div>
             </div>
             <div className={styles.cardValue}>{val !== null ? val : "—"}</div>
@@ -318,7 +313,6 @@ export default function Shell({
         pastTimeLabel={pastTimeLabel}
         onBackToLatest={onBackToLatest}
         onOpenSearch={() => setSearchOpen(true)}
-        onBellClick={handleBellClick}
         onOpenSettings={onOpenSettings}
         settingsOpen={settingsOpen}
         onLogout={onLogout}
@@ -391,7 +385,7 @@ export default function Shell({
           </div>
 
           {isTablet ? (
-            <aside className={`${styles.panel} ${styles.rightCol}`} aria-label="내 사업장 및 경고 목록">
+            <aside className={`${styles.panel} ${styles.rightCol}`} aria-label="즐겨찾기 한 사업장 및 경고 목록">
               <div className={styles.tabletTabs} role="tablist" aria-label="오른쪽 패널 전환">
                 <button
                   type="button"
@@ -401,7 +395,7 @@ export default function Shell({
                   onClick={() => setTabletTab("favorites")}
                   onKeyDown={onTabletTabKeyDown}
                 >
-                  ★ 내 사업장 ({favoritesCount})
+                  ★ 즐겨찾기 한 사업장 ({favoritesCount})
                 </button>
                 <button
                   type="button"
@@ -424,7 +418,7 @@ export default function Shell({
                 <div className={styles.panelHead}>
                   <h2 id="h-favorites" className={styles.panelTitle}>
                     <StarIcon filled />
-                    <span>내 사업장</span>
+                    <span>즐겨찾기 한 사업장</span>
                   </h2>
                   <span className={styles.panelCount}>{favoritesCount}곳</span>
                 </div>

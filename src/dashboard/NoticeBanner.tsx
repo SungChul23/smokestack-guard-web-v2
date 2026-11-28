@@ -10,7 +10,17 @@ import styles from "./NoticeBanner.module.css";
 export const ROLL_MS = 3500;
 const SLIDE_MS = 450;
 
-export default function NoticeBanner({ items, onPick }: { items: readonly Notice[]; onPick: (n: Notice) => void }) {
+export default function NoticeBanner({
+  items,
+  onPick,
+  onViewAll,
+  ariaLabel = "초과 공지",
+}: {
+  items: readonly Notice[];
+  onPick: (n: Notice) => void;
+  onViewAll?: () => void;
+  ariaLabel?: string;
+}) {
   const n = items.length;
   const reduced = useMediaQuery(REDUCED_QUERY);
   const rolling = n > 1 && !reduced;
@@ -27,7 +37,7 @@ export default function NoticeBanner({ items, onPick }: { items: readonly Notice
   useEffect(() => {
     if (!rolling || paused) return;
     const t = window.setInterval(() => {
-      if (document.hidden) return;
+      if (document.hidden || document.documentElement.getAttribute("data-effects") === "off") return;
       setJump(false);
       setIndex((i) => (i >= n ? 0 : i + 1));
     }, ROLL_MS);
@@ -52,7 +62,7 @@ export default function NoticeBanner({ items, onPick }: { items: readonly Notice
   return (
     <section
       className={styles.banner}
-      aria-label="초과 공지"
+      aria-label={ariaLabel}
       style={{ ["--nb-color" as string]: `var(--lv-${shown.level})` }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
@@ -61,7 +71,10 @@ export default function NoticeBanner({ items, onPick }: { items: readonly Notice
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setPaused(false);
       }}
     >
-      <span className={styles.tag}>공지</span>
+      <span className={styles.liveTag}>
+        <span className={styles.liveDot} aria-hidden="true" />
+        LIVE
+      </span>
       <div className={styles.viewport}>
         <div
           className={styles.track}
@@ -70,6 +83,8 @@ export default function NoticeBanner({ items, onPick }: { items: readonly Notice
         >
           {list.map((it, i) => {
             const clone = rolling && i === n;
+            const hasRise = typeof it.delta === "number" && it.delta > 0;
+            const riseText = hasRise ? `상승 +${Math.round(it.delta!)}%p` : "";
             return (
               <button
                 key={clone ? `${it.key}#clone` : it.key}
@@ -78,10 +93,11 @@ export default function NoticeBanner({ items, onPick }: { items: readonly Notice
                 data-level={it.level}
                 tabIndex={clone ? -1 : undefined}
                 aria-hidden={clone || undefined}
-                aria-label={`${labelOf(it.level)}: ${it.name} 굴뚝 ${it.stackCode}, 기준 대비 ${formatPct(it.ratio)}. 누르면 이 사업장을 선택합니다`}
+                aria-label={`${labelOf(it.level)}: ${it.name} 굴뚝 ${it.stackCode}, 기준 대비 ${formatPct(it.ratio)}${riseText ? `, ${riseText}` : ""}. 누르면 이 사업장을 선택합니다`}
                 onClick={() => onPick(it)}
               >
                 <span className={styles.level}>{labelOf(it.level)}</span>
+                {hasRise && <span className={styles.delta}>▲ +{Math.round(it.delta!)}%p 상승</span>}
                 <span className={styles.text}>
                   {it.name} · 굴뚝 {it.stackCode}
                 </span>
@@ -105,6 +121,11 @@ export default function NoticeBanner({ items, onPick }: { items: readonly Notice
             ›
           </button>
         </>
+      )}
+      {onViewAll && (
+        <button type="button" className={styles.viewAll} onClick={onViewAll}>
+          전체보기
+        </button>
       )}
     </section>
   );

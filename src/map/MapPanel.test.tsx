@@ -101,41 +101,15 @@ describe("지도", () => {
     expect(fireEvent.wheel(canvas, { deltaY: 120 })).toBe(false); // preventDefault가 불렸다
   });
 
-  it("농도 분포·굴뚝 연기 레이어는 기본 꺼짐이고, 레이어 메뉴에서 켜고 끌 수 있다", async () => {
-    render(<Harness />);
-    const layerBtn = screen.getByRole("button", { name: /^레이어/ });
-    expect(layerBtn).toHaveAttribute("aria-pressed", "false");
-    await userEvent.click(layerBtn);
-    const contour = screen.getByRole("checkbox", { name: "농도 분포" });
-    const smoke = screen.getByRole("checkbox", { name: "굴뚝 연기" });
-    expect(contour).not.toBeChecked();
-    expect(smoke).not.toBeChecked();
-    expect(screen.queryByRole("img", { name: /농도 분포 색 막대/ })).toBeNull();
-
-    await userEvent.click(contour);
-    expect(contour).toBeChecked();
-    expect(screen.getByRole("img", { name: /농도 분포 색 막대/ })).toBeInTheDocument();
-    expect(screen.getByText("낮음")).toBeInTheDocument();
-    expect(screen.getByText("높음")).toBeInTheDocument();
-
-    await userEvent.click(smoke);
-    expect(smoke).toBeChecked();
-
-    await userEvent.click(contour);
-    expect(contour).not.toBeChecked();
-    expect(screen.queryByRole("img", { name: /농도 분포 색 막대/ })).toBeNull();
-  });
-
-  it("농도 분포 목록은 켤 때만 읽는다(꺼져 있으면 요청하지 않는다)", async () => {
+  it("지도 상단에 레이어 메뉴·농도 분포가 없고 등고선 파일을 요청하지 않는다", async () => {
     const f = vi.fn(() => Promise.resolve(new Response("{}", { status: 404 })));
     vi.stubGlobal("fetch", f);
     render(<Harness />);
-    await new Promise((r) => setTimeout(r, 900));
+    expect(screen.queryByRole("button", { name: /^레이어/ })).toBeNull();
+    expect(screen.queryByRole("checkbox", { name: "농도 분포" })).toBeNull();
+    expect(screen.queryByRole("img", { name: /농도 분포 색 막대/ })).toBeNull();
+    await new Promise((r) => setTimeout(r, 300));
     expect(f).not.toHaveBeenCalled();
-    await userEvent.click(screen.getByRole("button", { name: /^레이어/ }));
-    await userEvent.click(screen.getByRole("checkbox", { name: "농도 분포" }));
-    await waitFor(() => expect(f).toHaveBeenCalledTimes(1));
-    expect(String((f.mock.calls[0] as unknown[])[0])).toContain("/contours/index.json");
     vi.unstubAllGlobals();
   });
 
@@ -424,7 +398,7 @@ describe("지도", () => {
     });
 
 
-    it("지도 윗줄은 한 줄이다: 제목·위치는 왼쪽, 레이어·내 주변·지도 종류·상태 칩·전국 보기는 오른쪽에 모여 있다", () => {
+    it("지도 윗줄은 한 줄이다: 제목·위치는 왼쪽, 내 주변·지도 종류·상태 칩·전국 보기는 오른쪽에 모여 있다", () => {
       setSize();
       render(
         <ThemeProvider>
@@ -434,20 +408,18 @@ describe("지도", () => {
       const bar = screen.getByText("지도", { selector: "strong" }).parentElement!;
       const nav = within(bar).getByRole("navigation", { name: "지도 중앙 위치" });
       const chips = within(bar).getByRole("group", { name: "지도에 표시할 상태" });
-      const layer = within(bar).getByRole("button", { name: /^레이어/ });
       const nearby = within(bar).getByRole("button", { name: /^내 주변/ });
       const nation = within(bar).getByRole("button", { name: "전국 보기" });
-      // 레이어·내 주변·칩·전국 보기는 같은 오른쪽 묶음 안에 있다(위치 표시는 그 밖, 왼쪽)
+      expect(within(bar).queryByRole("button", { name: /^레이어/ })).toBeNull();
+      // 내 주변·칩·전국 보기는 같은 오른쪽 묶음 안에 있다(위치 표시는 그 밖, 왼쪽)
       const right = chips.parentElement!;
-      expect(right.contains(layer)).toBe(true);
       expect(right.contains(nearby)).toBe(true);
       expect(right.contains(nation)).toBe(true);
       expect(right.contains(nav)).toBe(false);
-      // 문서 순서: 제목 → 위치 → 레이어 → 내 주변 → 지도 종류(기본·지도·위성) → 상태 칩 → 전국 보기
+      // 문서 순서: 제목 → 위치 → 내 주변 → 지도 종류(기본·지도·위성) → 상태 칩 → 전국 보기
       const follows = (a: Node, b: Node) => !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
       const kinds = within(bar).getByRole("group", { name: "지도 종류" });
-      expect(follows(nav, layer)).toBe(true);
-      expect(follows(layer, nearby)).toBe(true);
+      expect(follows(nav, nearby)).toBe(true);
       expect(follows(nearby, kinds)).toBe(true);
       expect(follows(kinds, chips)).toBe(true);
       expect(follows(chips, nation)).toBe(true);

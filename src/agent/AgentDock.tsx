@@ -74,7 +74,7 @@ export default function AgentDock({
           aria-expanded={false}
           onClick={() => setOpen(true)}
         >
-          <img src="/mascot.png" alt="" width={28} height={30} className={styles.launcherIcon} />
+          <img src="/mascot.png" alt="" width={44} height={46} className={styles.launcherIcon} />
           <span className={styles.launcherText}>AI에게 묻기</span>
         </button>
       )}

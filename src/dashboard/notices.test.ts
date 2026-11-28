@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { DayData, Site } from "../data/model";
-import { buildNotices, latestRatio, STALE_SLOTS, visibleNotices } from "./notices";
+import { buildNotices, buildRisingNotices, latestRatio, STALE_SLOTS, visibleNotices } from "./notices";
 
 const N = 12;
 const times = Array.from({ length: N }, (_, i) => Date.UTC(2026, 10, 10, 0, 0) + i * 1800000);
@@ -10,6 +10,8 @@ const site = (id: string, name: string, codes: string[]): Site => ({
 /** 한 굴뚝의 NOx(기준 100)를 칸별로 */
 const stack = (nox: (string | null)[]) => ({ nox, sox: nox.map(() => null), noxLimit: "100", soxLimit: null });
 const fill = (v: string | null, last?: string | null) => Array.from({ length: N }, (_, i) => (i === N - 1 && last !== undefined ? last : v));
+const ramp = (from: number, to: number) =>
+  Array.from({ length: N }, (_, i) => String(Math.round(from + ((to - from) * i) / (N - 1))));
 
 const sites = [site("A", "가공장", ["1", "2"]), site("B", "나공장", ["1"]), site("C", "다공장", ["1"]), site("D", "라공장", ["1"])];
 const day: DayData = {
@@ -55,6 +57,35 @@ describe("공지 만들기", () => {
   it("판정은 지도 시간대가 아니라 마지막 칸 기준이다(앞 칸이 초과여도 지금 정상이면 공지하지 않는다)", () => {
     const calm: DayData = { times, stacks: { "A:1": stack(Array.from({ length: N }, (_, i) => (i < 3 ? "200" : "10"))) } };
     expect(buildNotices([sites[0]], calm, { levels: ["exceed"] })).toEqual([]);
+  });
+});
+
+describe("상승 추세 공지(buildRisingNotices)", () => {
+  it("초과는 제외하고 최근 6시간 상승폭이 3%p 이상인 사업장만 높은 단계→큰 상승폭 순으로 반환한다", () => {
+    const risingSites = [
+      site("EX", "초과공장", ["1"]),
+      site("RK", "위험상승", ["1"]),
+      site("WN", "경고상승", ["1", "2"]),
+      site("FL", "정체공장", ["1"]),
+      site("DN", "하락공장", ["1"]),
+    ];
+    const risingDay: DayData = {
+      times,
+      stacks: {
+        "EX:1": stack(ramp(85, 115)), // 상승이지만 이미 초과라 제외
+        "RK:1": stack(ramp(76, 94)), // 위험, +18%p
+        "WN:1": stack(ramp(78, 84)), // 경고, +6%p
+        "WN:2": stack(ramp(65, 86)), // 같은 사업장에서 상승폭이 더 큼(+21%p) → 대표
+        "FL:1": stack(ramp(82, 83)), // +1%p (기준 3%p 미만)
+        "DN:1": stack(ramp(95, 80)), // 하락
+      },
+    };
+    const items = buildRisingNotices(risingSites, risingDay);
+    expect(items.map((i) => [i.name, i.stackCode, i.level, Math.round(i.delta ?? 0)])).toEqual([
+      ["위험상승", "1", "risk", 18],
+      ["경고상승", "2", "warn", 21],
+    ]);
+    expect(Math.round(items[0].prevRatio ?? 0)).toBe(76);
   });
 });
 

@@ -5,9 +5,9 @@ import type { SigninRedirectArgs } from "oidc-client-ts";
 import type { AuthProviderProps } from "react-oidc-context";
 
 const region = "ap-northeast-2";
-const userPoolId = import.meta.env.VITE_COGNITO_USER_POOL_ID as string;
-const clientId = import.meta.env.VITE_COGNITO_CLIENT_ID as string;
-const loginDomain = import.meta.env.VITE_COGNITO_DOMAIN as string;
+const userPoolId = (import.meta.env.VITE_COGNITO_USER_POOL_ID as string) || "ap-northeast-2_dummy";
+const clientId = (import.meta.env.VITE_COGNITO_CLIENT_ID as string) || "dummy_client_id";
+const loginDomain = (import.meta.env.VITE_COGNITO_DOMAIN as string) || "dummy.auth.ap-northeast-2.amazoncognito.com";
 
 export const API_BASE = (import.meta.env.VITE_API_BASE as string) || "https://api.smokestack-guard.store";
 

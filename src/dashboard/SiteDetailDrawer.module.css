@@ -25,7 +25,21 @@
   border-radius: var(--r-btn);
   border: 1px solid var(--border);
   background: var(--bg);
-  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  animation: siteTabIn 180ms var(--ease-spring) both;
+}
+@keyframes siteTabIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.siteTabWrap:hover {
+  border-color: var(--border-strong);
 }
 .siteTabWrap[data-active="true"] {
   background: var(--accent-weak);
@@ -77,10 +91,15 @@
   display: grid;
   place-items: center;
   border-radius: 6px;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-spring);
 }
 .siteTabClose:hover {
   color: var(--ink);
   background: var(--panel-hover);
+  transform: scale(1.1);
+}
+.siteTabClose:active {
+  transform: scale(0.9);
 }
 .siteTabClose:focus-visible {
   outline: 2px solid var(--accent);
@@ -156,7 +175,13 @@
   place-items: center;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-spring), color var(--dur-fast) var(--ease-out);
+}
+.closeBtn svg {
+  transition: transform 200ms var(--ease-spring);
+}
+.closeBtn:hover svg {
+  transform: rotate(90deg);
 }
 .starBtn {
   font-size: 22px;
@@ -167,11 +192,22 @@
   color: var(--lv-warn);
   border-color: color-mix(in srgb, var(--lv-warn) 45%, var(--border));
   background: color-mix(in srgb, var(--lv-warn) 10%, var(--bg));
+  animation: starPop 320ms var(--ease-spring);
+}
+@keyframes starPop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.26) rotate(-10deg); }
+  100% { transform: scale(1) rotate(0deg); }
 }
 .starBtn:hover,
 .closeBtn:hover {
   background: var(--panel-hover);
   border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.starBtn:active,
+.closeBtn:active {
+  transform: scale(0.92);
 }
 .starBtn:focus-visible,
 .closeBtn:focus-visible {
@@ -224,11 +260,14 @@
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
 }
 .contentTab:hover {
   color: var(--ink);
   background: var(--panel-hover);
+}
+.contentTab:active {
+  transform: scale(0.96);
 }
 .contentTab[aria-selected="true"] {
   background: var(--accent-weak);
@@ -242,6 +281,18 @@
 
 .panelBody {
   min-width: 0;
+  animation: tabPanelIn 200ms var(--ease-out) both;
+}
+
+@keyframes tabPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── 개요 탭 ── */
@@ -266,6 +317,12 @@
   flex-direction: column;
   gap: 6px;
   min-width: 0;
+  transition: border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+.kpiCard:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
 }
 .kpiCard[data-level="exceed"] {
   border-color: color-mix(in srgb, var(--lv-exceed) 38%, var(--border));
@@ -388,6 +445,15 @@
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+.primaryLink:hover {
+  background: color-mix(in srgb, var(--accent) 24%, var(--bg));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.primaryLink:active {
+  transform: scale(0.96);
 }
 .primaryLink:focus-visible {
   outline: 2px solid var(--accent);
@@ -445,6 +511,11 @@
   padding: 0;
   cursor: pointer;
   white-space: nowrap;
+  transition: transform var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.stackRow:hover .stackRowBtn {
+  color: var(--accent);
+  transform: translateX(3px);
 }
 .stackRowBtn:focus-visible {
   outline: 2px solid var(--accent);
@@ -553,11 +624,15 @@
   font-size: 15px;
   text-align: left;
   cursor: pointer;
-  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
 }
 .aiStarterBtn:hover {
   border-color: var(--accent);
   background: var(--panel-hover);
+  transform: translateX(4px);
+}
+.aiStarterBtn:active {
+  transform: translateX(2px) scale(0.99);
 }
 .aiStarterBtn:focus-visible {
   outline: 2px solid var(--accent);
@@ -575,6 +650,15 @@
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), filter var(--dur-fast) var(--ease-out);
+}
+.aiOpenBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 34%, transparent);
+  filter: brightness(1.06);
+}
+.aiOpenBtn:active {
+  transform: scale(0.97);
 }
 .aiOpenBtn:focus-visible {
   outline: 2px solid var(--accent);

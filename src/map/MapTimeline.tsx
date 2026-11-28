@@ -144,40 +144,72 @@ export default function MapTimeline({ times, slot, onSlot }: Props) {
       )}
 
       <div className={styles.bar}>
-        <button
-          type="button"
-          className={styles.stepBtn}
-          aria-label="이전 30분"
-          title="이전 30분 (←)"
-          disabled={slot <= 0}
-          onClick={stepPrev}
-        >
-          ◀
-        </button>
-
         {!isMobile && (
           <button
             type="button"
             className={styles.playBtn}
             aria-label={playing ? "재생 멈춤" : "타임라인 재생"}
             aria-pressed={playing}
-            title={playing ? "멈춤" : "자동 재생 (0.8초/칸)"}
+            title={playing ? "자동 재생 멈춤" : "자동 재생 (0.8초/칸)"}
             onClick={togglePlay}
           >
-            {playing ? "⏸" : "▶"}
+            {playing ? (
+              <svg className={styles.btnIcon} width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+                <rect x="2.5" y="2" width="3.2" height="10" rx="0.8" fill="currentColor" />
+                <rect x="8.3" y="2" width="3.2" height="10" rx="0.8" fill="currentColor" />
+              </svg>
+            ) : (
+              <svg className={styles.btnIcon} width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+                <path d="M3.2 2.2L11.6 7L3.2 11.8Z" fill="currentColor" />
+              </svg>
+            )}
+            <span>{playing ? "멈춤" : "재생"}</span>
           </button>
         )}
 
-        <button
-          type="button"
-          className={styles.stepBtn}
-          aria-label="다음 30분"
-          title="다음 30분 (→)"
-          disabled={slot >= last}
-          onClick={stepNext}
-        >
-          ▶
-        </button>
+        <div className={styles.stepGroup} role="group" aria-label="30분 단위 이동">
+          <button
+            type="button"
+            className={styles.stepBtn}
+            aria-label="이전 30분"
+            title="이전 30분 (←)"
+            disabled={slot <= 0}
+            onClick={stepPrev}
+          >
+            <svg className={styles.btnIcon} width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+              <path
+                d="M8.8 2.8L4.6 7L8.8 11.2"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {!isMobile && <span className={styles.stepLabel}>30분</span>}
+          </button>
+
+          <button
+            type="button"
+            className={styles.stepBtn}
+            aria-label="다음 30분"
+            title="다음 30분 (→)"
+            disabled={slot >= last}
+            onClick={stepNext}
+          >
+            {!isMobile && <span className={styles.stepLabel}>30분</span>}
+            <svg className={styles.btnIcon} width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+              <path
+                d="M5.2 2.8L9.4 7L5.2 11.2"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
 
         {isMobile ? (
           <button
@@ -226,7 +258,9 @@ export default function MapTimeline({ times, slot, onSlot }: Props) {
         <button
           type="button"
           className={styles.latestBtn}
+          data-active={isPast ? "true" : undefined}
           disabled={!isPast}
+          title={isPast ? "최신 시각으로 바로 이동 (End)" : "현재 최신 시각입니다"}
           onClick={goLatest}
         >
           최신

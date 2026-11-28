@@ -87,10 +87,15 @@
   display: grid;
   place-items: center;
   cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-spring);
 }
 .star:hover {
   border-color: var(--border-strong);
   background: var(--panel-hover);
+  transform: scale(1.08);
+}
+.star:active {
+  transform: scale(0.9);
 }
 .star:focus-visible {
   outline: 2px solid var(--accent);
@@ -108,9 +113,15 @@
   display: grid;
   place-items: center;
   cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-spring);
 }
 .closeBtn:hover {
   border-color: var(--accent);
+  background: var(--panel-hover);
+  transform: rotate(90deg);
+}
+.closeBtn:active {
+  transform: scale(0.92);
 }
 .closeBtn:focus-visible {
   outline: 2px solid var(--accent);
@@ -152,9 +163,15 @@
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
 }
 .latest:hover {
   background: var(--accent-weak);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.latest:active {
+  transform: scale(0.95);
 }
 .latest:focus-visible {
   outline: 2px solid var(--accent);
@@ -195,10 +212,13 @@
   white-space: nowrap;
   cursor: pointer;
   flex: none;
-  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
 }
 .segBtn:hover {
   color: var(--ink);
+}
+.segBtn:active {
+  transform: scale(0.95);
 }
 .segBtn[aria-pressed="true"] {
   background: var(--accent-weak);
@@ -234,10 +254,14 @@
   white-space: nowrap;
   cursor: pointer;
   flex: none;
-  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
 }
 .chip:hover:not(:disabled) {
   border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+.chip:active:not(:disabled) {
+  transform: scale(0.95);
 }
 .chip[aria-pressed="true"],
 .chip[aria-expanded="true"] {
@@ -298,7 +322,7 @@
   cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
-  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 }
 .card:not([data-on]) {
   opacity: 0.72;
@@ -314,6 +338,11 @@
 }
 .card:not([data-disabled]):hover {
   border-color: var(--card-color);
+  transform: translateY(-1.5px);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.18);
+}
+.card:not([data-disabled]):active {
+  transform: scale(0.98);
 }
 
 .cardCheck {
@@ -429,6 +458,18 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  animation: rangeSlideIn 200ms var(--ease-out) both;
+}
+
+@keyframes rangeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .rangeForm {

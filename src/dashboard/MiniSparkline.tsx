@@ -1,5 +1,6 @@
 // 최근 6시간 미니 추세선(SVG). 내 사업장 줄과 상세 서랍 개요 탭에서 재사용한다.
 import type { LevelKey } from "../logic/status";
+import styles from "./MiniSparkline.module.css";
 
 interface Props {
   points: ReadonlyArray<number | null>;
@@ -76,6 +77,8 @@ export default function MiniSparkline({
         <path
           key={idx}
           d={d}
+          pathLength={1}
+          className={styles.line}
           fill="none"
           stroke={stroke}
           strokeWidth="1.8"
@@ -84,7 +87,7 @@ export default function MiniSparkline({
         />
       ))}
       {lastIdx >= 0 && points[lastIdx] !== null && (
-        <circle cx={xOf(lastIdx)} cy={yOf(points[lastIdx]!)} r="2.3" fill={stroke} />
+        <circle className={styles.endDot} cx={xOf(lastIdx)} cy={yOf(points[lastIdx]!)} r="2.3" fill={stroke} />
       )}
     </svg>
   );

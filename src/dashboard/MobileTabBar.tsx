@@ -62,11 +62,12 @@ export default function MobileTabBar({
         <button
           type="button"
           className={styles.item}
+          aria-label="즐겨찾기 한 사업장"
           aria-current={active === "favorites" ? "page" : undefined}
           onClick={() => onSelect("favorites")}
         >
           <StarIcon filled={active === "favorites"} />
-          <span>내 사업장</span>
+          <span>즐겨찾기</span>
         </button>
         <button
           type="button"

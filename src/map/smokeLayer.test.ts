@@ -9,12 +9,17 @@ import {
 } from "./smokeLayer";
 
 describe("굴뚝 연기 레이어 계산", () => {
-  it("정상(ok)과 측정 없음(null)은 연기를 내지 않는다", () => {
-    expect(smokeConfigFor("ok", 40, false)).toBeNull();
+  it("측정 없음(null)만 연기를 내지 않고, 정상(ok)도 은은한 연기를 낸다", () => {
     expect(smokeConfigFor(null, null, false)).toBeNull();
+    const ok = smokeConfigFor("ok", 40, false);
+    expect(ok).not.toBeNull();
+    expect(ok!.colorKind).toBe("ok");
+    expect(ok!.spawnRate).toBeGreaterThan(0);
+    expect(ok!.riseSpeed).toBeGreaterThan(0);
   });
 
   it("단계·비율이 높을수록 방출량과 상승 속도가 크고 초과가 가장 크다", () => {
+    const ok = smokeConfigFor("ok", 35, false)!;
     const caution = smokeConfigFor("caution", 72, false)!;
     const warn = smokeConfigFor("warn", 84, false)!;
     const risk = smokeConfigFor("risk", 94, false)!;
@@ -22,10 +27,13 @@ describe("굴뚝 연기 레이어 계산", () => {
     expect(exceed.spawnRate).toBeGreaterThan(risk.spawnRate);
     expect(risk.spawnRate).toBeGreaterThan(warn.spawnRate);
     expect(warn.spawnRate).toBeGreaterThan(caution.spawnRate);
+    expect(caution.spawnRate).toBeGreaterThan(ok.spawnRate);
     expect(exceed.riseSpeed).toBeGreaterThan(risk.riseSpeed);
+    expect(caution.riseSpeed).toBeGreaterThan(ok.riseSpeed);
     expect(exceed.colorKind).toBe("exceed");
     expect(risk.colorKind).toBe("risk");
     expect(warn.colorKind).toBe("neutral");
+    expect(ok.colorKind).toBe("ok");
   });
 
   it("휴대폰에서는 방출량과 최대 입자 수가 절반이다", () => {

@@ -1,31 +1,45 @@
-/* 우하단 작은 "AI에게 묻기" 버튼([E-9]: 안에 작은 마스코트, 서랍 열리면 서랍 왼쪽 바깥으로 이동) */
+/* 우하단 "AI에게 묻기" 버튼([E-9]: 크게 눈에 띄는 마스코트 + 라벨, 서랍 열리면 서랍 왼쪽 바깥으로 이동) */
 .launcher {
   position: fixed;
   right: 24px;
-  bottom: 44px;
+  bottom: 40px;
   z-index: 80;
-  height: 46px;
-  padding: 0 18px 0 10px;
-  border: 1px solid var(--border-strong);
+  height: 64px;
+  padding: 0 26px 0 14px;
+  border: 2px solid color-mix(in srgb, var(--accent) 68%, var(--border-strong));
   border-radius: var(--r-pill);
   background: var(--panel-solid);
   color: var(--ink);
-  box-shadow: var(--shadow-panel);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.38);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   font-family: var(--font-sans);
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   line-height: 1;
+  letter-spacing: -0.01em;
   white-space: nowrap;
-  transition: transform var(--dur-fast) var(--ease-out), right var(--dur) var(--ease-out), border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+  transition: transform var(--dur-fast) var(--ease-spring), right var(--dur) var(--ease-out), border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+  animation: launcherHaloPulse 3.6s ease-in-out infinite;
+}
+@keyframes launcherHaloPulse {
+  0%, 100% {
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.38), 0 0 0 0 color-mix(in srgb, var(--accent) 34%, transparent);
+  }
+  50% {
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.42), 0 0 0 8px color-mix(in srgb, var(--accent) 0%, transparent);
+  }
 }
 .launcher:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.02);
   border-color: var(--accent);
   background: var(--panel-hover);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.46), 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.launcher:active {
+  transform: translateY(0) scale(0.96);
 }
 .launcher:focus-visible {
   outline: 3px solid var(--accent);
@@ -35,25 +49,43 @@
   flex-shrink: 0;
   object-fit: contain;
   pointer-events: none;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.36));
+  transition: transform 220ms var(--ease-spring);
+  animation: mascotBob 3.2s ease-in-out infinite;
+}
+@keyframes mascotBob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(-2deg); }
+}
+.launcher:hover .launcherIcon {
+  animation-play-state: paused;
+  transform: translateY(-2px) rotate(-8deg) scale(1.1);
 }
 .launcherText {
   white-space: nowrap;
 }
 
-/* 상세 서랍이 열리면 서랍 왼쪽 바깥(16px 여유)으로 옮겨 서랍을 절대 가리지 않는다 */
+/* 상세 서랍(740px)이 열리면 서랍 왼쪽 바깥으로 옮겨 서랍을 절대 가리지 않는다 */
 .drawerOffset {
-  right: calc(min(560px, 100vw - 48px) + 40px);
+  right: calc(min(740px, 100vw - 48px) + 32px);
 }
 @media (max-width: 1279px) and (min-width: 641px) {
   .drawerOffset {
-    right: calc(min(50vw, 560px) + 28px);
+    right: calc(min(68vw, 680px) + 24px);
   }
 }
 
+:global(:root[data-effects="off"]) .launcher,
+:global(:root[data-effects="off"]) .launcherIcon,
+:global(:root[data-doc-hidden="true"]) .launcher,
+:global(:root[data-doc-hidden="true"]) .launcherIcon {
+  animation: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .launcher { transition: none; }
-  .launcher:hover { transform: none; }
+  .launcher { transition: none; animation: none !important; }
+  .launcherIcon { transition: none; animation: none !important; }
+  .launcher:hover, .launcher:hover .launcherIcon { transform: none; }
 }
 @media (max-width: 640px) {
   .hideMobile { display: none; }

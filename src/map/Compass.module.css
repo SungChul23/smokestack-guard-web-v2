@@ -15,10 +15,48 @@
   font: 700 13px/1 var(--font-mono, ui-monospace, Consolas, monospace);
   text-shadow: 0 0 4px var(--stage-bg), 0 0 8px var(--stage-bg);
 }
-.n { grid-column: 2; grid-row: 1; color: var(--accent); }
+.n {
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--accent);
+  animation: compassNorthGlow 4.2s ease-in-out infinite;
+}
 .e { grid-column: 3; grid-row: 2; }
 .w { grid-column: 1; grid-row: 2; }
 .s { grid-column: 2; grid-row: 3; }
-.cross { grid-column: 2; grid-row: 2; width: 24px; height: 24px; overflow: visible; }
+.cross {
+  grid-column: 2;
+  grid-row: 2;
+  width: 24px;
+  height: 24px;
+  overflow: visible;
+  transform-origin: center;
+  animation: compassSway 6.2s ease-in-out infinite;
+}
 .points { fill: var(--stage-bg); stroke: var(--map-ink); stroke-width: 1; stroke-linejoin: round; }
 .north { fill: var(--accent); stroke: none; }
+
+@keyframes compassSway {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(2.6deg); }
+  75% { transform: rotate(-2.4deg); }
+}
+
+@keyframes compassNorthGlow {
+  0%, 100% { opacity: 0.88; }
+  50% { opacity: 1; text-shadow: 0 0 6px var(--accent), 0 0 10px var(--stage-bg); }
+}
+
+:global(:root[data-effects="off"]) .cross,
+:global(:root[data-effects="off"]) .n,
+:global(:root[data-doc-hidden="true"]) .cross,
+:global(:root[data-doc-hidden="true"]) .n {
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cross,
+  .n {
+    animation: none !important;
+  }
+}

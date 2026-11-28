@@ -8,6 +8,11 @@
   border-radius: 10px;
   background: color-mix(in srgb, var(--accent) 7%, var(--panel));
   color: var(--ink);
+  animation: stickerSlideIn 260ms var(--ease-out);
+}
+@keyframes stickerSlideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .title { flex: none; padding-top: 4px; font-size: 16px; color: var(--accent); }
 .list { flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
@@ -24,11 +29,17 @@
   font: inherit;
   font-size: 15px;
   cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 }
 .chip[data-level="exceed"] { border-color: var(--lv-exceed); }
 .chip[data-level="risk"] { border-color: var(--lv-risk); }
 .chip[data-level="warn"] { border-color: var(--lv-warn); }
-.chip:hover { background: color-mix(in srgb, var(--accent) 12%, var(--panel)); }
+.chip:hover {
+  transform: translateY(-1.5px);
+  background: color-mix(in srgb, var(--accent) 14%, var(--panel));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+.chip:active { transform: scale(0.96); }
 .chip:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ratio { flex: none; font-variant-numeric: tabular-nums; color: var(--muted); }
@@ -45,6 +56,12 @@
   font-size: 22px;
   line-height: 1;
   cursor: pointer;
+  transition: transform 200ms var(--ease-spring), color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
 }
-.close:hover { color: var(--ink); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.close:hover {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  transform: rotate(90deg);
+}
+.close:active { transform: rotate(90deg) scale(0.9); }
 .close:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }

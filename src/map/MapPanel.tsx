@@ -1,10 +1,10 @@
-// 지도 패널(6단계): 원본 Canvas 2D 지도를 유지하고, 아날로그 시계를 30분 타임라인으로 대체했다.
-// - 경계·농도 분포(등고선)는 월드 좌표로 Path2D를 한 번만 만들고, 그릴 때는 변환 행렬만 바꾼다.
+// 지도 패널: 원본 Canvas 2D 지도를 유지하고, 아날로그 시계를 30분 타임라인으로 대체했다.
+// - 경계는 월드 좌표로 Path2D를 한 번만 만들고, 그릴 때는 변환 행렬만 바꾼다.
 // - 점은 줌에 따라 반경이 다른 화면 거리 묶기(전국 100px, 그 밖 86px)로 묶고 묶음 단위로 그린다.
 // - 상단 상태 바 필터(statusFilter), 경고 목록 호버 강조·선택, 공지·검색·내 사업장 이동, 타임라인이 모두 연결된다.
-// - 레이어 메뉴: 농도 분포(기본 끔, 켜면 낮음→높음 색 막대) · 굴뚝 연기(기본 끔, 2차 캔버스 오버레이).
+// - 굴뚝 연기 애니메이션은 기본 켜짐이며 정상(ok) 포함 측정값이 있는 모든 굴뚝에서 피어오른다.
 // - 내 주변([E-11]): 지도 클릭(데스크톱)·길게 누르기(휴대폰)·위치 선택으로 중심과 5/10/20km 반경 원을 표시한다.
-// - 화면 효과 끄기·OS 움직임 줄이기·탭 숨김 시 모든 움직임(연기·파형·비행·바다 그라데이션)을 멈춘다.
+// - 화면 효과 끄기·OS 움직임 줄이기·탭 숨김 시 모든 움직임(연기·파형·비행·바다 그라데이션)을 함께 멈춘다.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMediaQuery } from "../agent/useMediaQuery";
 import { type GeoRegion, type SiteState } from "../data/model";
@@ -14,10 +14,9 @@ import { useSelection, type MapShowKey } from "../state/selection";
 import { useTheme } from "../theme/theme";
 import {
   beamHeight, boundsOf, canSeparate, carryClusters, clusterRadius, clusterRadiusMerge, fitView, pinHit, project, rankOf,
-  toScreen, zoomAt, zoomGrade, clampView, minScaleFor, centeredOn, easeOutCubic, interpolateView, needsFocus, stepZoomView, flightDuration, FOCUS_SCALE, MAX_SCALE, MIN_SCALE,
+  toScreen, zoomAt, clampView, minScaleFor, centeredOn, easeOutCubic, interpolateView, needsFocus, stepZoomView, flightDuration, FOCUS_SCALE, MAX_SCALE, MIN_SCALE,
   type Bounds, type Cluster, type View,
 } from "./geometry";
-import { ContourStore, contourPlan, contourStyle, filesFor, groupByElevation, loadIndex, visibleLines, type ContourIndex } from "./contours";
 import { freshAlerts, ranksOf, type RankMap } from "./freshAlerts";
 import Compass from "./Compass";
 import MapTimeline from "./MapTimeline";
@@ -292,16 +291,6 @@ export default function MapPanel({ states, geo, times, slot, onSlot }: Props) {
   const [picker, setPicker] = useState<{ x: number; y: number; items: SiteState[] } | null>(null);
   const effects = useRef(new Map<string, { start: number; color: string }>());
   const baseCache = useRef<{ key: string; view: View; rough: boolean; mw: number; mh: number; canvas: HTMLCanvasElement } | null>(null);
-  const contourVersion = useRef(0);
-  const requested = useRef(new Set<string>());
-
-  // 레이어 메뉴 상태: 농도 분포(등고선, 기본 끔) · 굴뚝 연기(기본 끔)
-  const [layerMenuOpen, setLayerMenuOpen] = useState(false);
-  const layerWrapRef = useRef<HTMLDivElement>(null);
-  const [contourOn, setContourOn] = useState(false);
-  const contourOnRef = useRef(false);
-  contourOnRef.current = contourOn;
-  const [smokeOn, setSmokeOn] = useState(false);
 
   // 내 주변([E-11]) 상태
   const [nearbyOpen, setNearbyOpen] = useState(false);
@@ -314,9 +303,6 @@ export default function MapPanel({ states, geo, times, slot, onSlot }: Props) {
   const longPressTimer = useRef<number | null>(null);
   const longPressFired = useRef(false);
 
-  const contourIndex = useRef<ContourIndex | null>(null);
-  const contourStore = useRef(new ContourStore());
-
   // 지도 종류: 기본 지도(Canvas) / 네이버 일반 / 네이버 위성
   const [mode, setMode] = useState<MapMode>("control");
   const modeRef = useRef<MapMode>("control");
@@ -327,32 +313,7 @@ export default function MapPanel({ states, geo, times, slot, onSlot }: Props) {
   const modeToken = useRef(0);
   const naverOn = mode !== "control";
 
-  // 레이어 메뉴 바깥 클릭 및 Esc 닫기
-  useEffect(() => {
-    if (!layerMenuOpen) return;
-    const onDown = (e: MouseEvent) => {
-      if (layerWrapRef.current && !layerWrapRef.current.contains(e.target as Node)) {
-        setLayerMenuOpen(false);
-      }
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setLayerMenuOpen(false);
-    };
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [layerMenuOpen]);
-
   const regions = useMemo(() => buildRegions(geo), [geo]);
-  const landPath = useMemo(() => {
-    if (typeof Path2D === "undefined") return null;
-    const p = new Path2D();
-    for (const r of regions) if (r.path) p.addPath(r.path);
-    return p;
-  }, [regions]);
 
   const siteKey = `${states.length}:${states[0]?.site.id ?? ""}:${states[states.length - 1]?.site.id ?? ""}`;
   const projected = useMemo(() => {
@@ -472,22 +433,7 @@ export default function MapPanel({ states, geo, times, slot, onSlot }: Props) {
     );
   };
 
-  // ── 농도 분포(등고선): 필요한 파일을 읽고, 다 읽히면 바닥 레이어를 새로 그린다 ──────
-  const ensureContours = (viewport: Bounds, source: "overview" | "regions") => {
-    const idx = contourIndex.current;
-    if (!idx) return;
-    for (const f of filesFor(idx, source, viewport)) {
-      if (contourStore.current.get(f) || requested.current.has(f)) continue;
-      requested.current.add(f);
-      contourStore.current.load(f).then(
-        () => { contourVersion.current++; scheduleRef.current(); },
-        () => { requested.current.delete(f); },
-      );
-    }
-  };
-
-  const drawBase = (ctx: CanvasRenderingContext2D, css: (n: string) => string, view: View, w: number, h: number, dpr: number, withContours: boolean) => {
-    const viewport: Bounds = { minX: -view.ox / view.scale, minY: -view.oy / view.scale, maxX: (w - view.ox) / view.scale, maxY: (h - view.oy) / view.scale };
+  const drawBase = (ctx: CanvasRenderingContext2D, css: (n: string) => string, view: View, w: number, h: number, dpr: number) => {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
     ctx.save();
@@ -500,29 +446,6 @@ export default function MapPanel({ states, geo, times, slot, onSlot }: Props) {
       ctx.fill(r.path, "evenodd");
     }
     ctx.globalAlpha = 1;
-
-    if (contourOnRef.current && withContours && landPath && contourIndex.current) {
-      const plan = contourPlan(zoomGrade(view.scale));
-      const files = filesFor(contourIndex.current, plan.source, viewport);
-      const sets = files.map((f) => contourStore.current.get(f)).filter((x): x is NonNullable<typeof x> => !!x);
-      if (files.length) ensureContours(viewport, plan.source);
-      if (sets.length) {
-        ctx.save();
-        ctx.clip(landPath, "evenodd");
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        const groups = groupByElevation(visibleLines(sets, viewport));
-        for (const [elevation, group] of groups) {
-          const st = contourStyle(elevation, plan.thin, plan.bold, theme === "light");
-          if (st.alpha <= 0) continue;
-          ctx.strokeStyle = st.color;
-          ctx.globalAlpha = st.alpha;
-          ctx.lineWidth = st.width / view.scale;
-          for (const l of group) if (l.path) ctx.stroke(l.path);
-        }
-        ctx.restore();
-      }
-    }
 
     for (const r of regions) {
       if (!r.path) continue;
@@ -542,6 +465,7 @@ export default function MapPanel({ states, geo, times, slot, onSlot }: Props) {
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
     const { w, h, dpr } = sizeRef.current;
+    if (w <= 0 || h <= 0 || dpr <= 0 || canvas.width <= 0 || canvas.height <= 0) return;
     const now = performance.now();
     const still = reducedRef.current;
     const flight = animRef.current;
@@ -555,7 +479,7 @@ export default function MapPanel({ states, geo, times, slot, onSlot }: Props) {
 
     const onNaver = modeRef.current !== "control";
     if (!onNaver) {
-      const staticKey = [w, h, dpr, mapPath.sido, theme, contourOnRef.current, contourVersion.current, regions.length].join("|");
+      const staticKey = [w, h, dpr, mapPath.sido, theme, regions.length].join("|");
       const c = baseCache.current;
       const moving = movingRef.current;
       let fresh = !c || c.key !== staticKey;
@@ -576,13 +500,13 @@ export default function MapPanel({ states, geo, times, slot, onSlot }: Props) {
         off.height = Math.round((h + 2 * mh) * dpr);
         const octx = off.getContext("2d");
         const rough = moving;
-        if (octx) drawBase(octx, css, { scale: view.scale, ox: view.ox + mw, oy: view.oy + mh }, w + 2 * mw, h + 2 * mh, dpr, !rough);
+        if (octx) drawBase(octx, css, { scale: view.scale, ox: view.ox + mw, oy: view.oy + mh }, w + 2 * mw, h + 2 * mh, dpr);
         baseCache.current = { key: staticKey, view: { ...view }, rough, mw, mh, canvas: off };
       }
     }
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (!onNaver && baseCache.current) {
+    if (!onNaver && baseCache.current && baseCache.current.canvas.width > 0 && baseCache.current.canvas.height > 0) {
       const c = baseCache.current;
       const k = view.scale / c.view.scale;
       ctx.setTransform(dpr * k, 0, 0, dpr * k, dpr * (view.ox - k * c.view.ox), dpr * (view.oy - k * c.view.oy));
@@ -687,28 +611,14 @@ export default function MapPanel({ states, geo, times, slot, onSlot }: Props) {
     settleTimer.current = window.setTimeout(() => { movingRef.current = false; scheduleRef.current(); syncRef.current(); }, 160);
   };
 
-  // 농도 분포(등고선) 인덱스: 켤 때만 읽는다
-  useEffect(() => {
-    if (!contourOn || contourIndex.current) return;
-    let alive = true;
-    const load = () => loadIndex().then((idx) => { if (alive) { contourIndex.current = idx; scheduleRef.current(); } }, () => {});
-    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
-    if (w.requestIdleCallback) {
-      const id = w.requestIdleCallback(load, { timeout: 1500 });
-      return () => { alive = false; w.cancelIdleCallback?.(id); };
-    }
-    const t = window.setTimeout(load, 600);
-    return () => { alive = false; window.clearTimeout(t); };
-  }, [contourOn]);
-
-  // ── 6단계 [3]: 굴뚝 연기 오버레이 캔버스 루프 ────────────────────────
+  // ── 굴뚝 연기 오버레이 캔버스 루프(기본 켜짐 · 정상 포함 · 화면 효과 끄기 시 멈춤) ────
   useEffect(() => {
     const canvas = smokeCanvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    if (!smokeOn || reducedMotion) {
+    if (reducedMotion) {
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       return;
@@ -751,19 +661,21 @@ export default function MapPanel({ states, geo, times, slot, onSlot }: Props) {
       for (let ci = 0; ci < cs.length; ci++) {
         const c = cs[ci];
         if (c.x < -20 || c.y < -20 || c.x > w + 20 || c.y > h + 20) continue;
-        if (c.maxRank <= 0) continue; // 정상(0)·측정 없음(-1)은 연기를 내지 않는다
+        if (c.maxRank < 0) continue; // 측정 없음(-1)만 연기를 내지 않는다(정상 0 포함 모두 방출)
         const level = RANK_LEVEL[c.maxRank];
-        let maxRatio = 75;
+        let maxRatio: number | null = null;
         for (const m of c.members) {
           const st = sts[vis[m]];
-          if (st?.ratio !== null && st?.ratio !== undefined && st.ratio > maxRatio) maxRatio = st.ratio;
+          if (st?.ratio !== null && st?.ratio !== undefined && (maxRatio === null || st.ratio > maxRatio)) {
+            maxRatio = st.ratio;
+          }
         }
         const cfg = smokeConfigFor(level, maxRatio, isMobile);
         if (!cfg) continue;
         const carry = (accum.get(ci) ?? 0) + cfg.spawnRate * dt;
         const spawnCount = Math.floor(carry);
         accum.set(ci, carry - spawnCount);
-        const topY = c.y - Math.max(beamHeight(c.maxRank), 10);
+        const topY = c.y - Math.max(beamHeight(c.maxRank), 8);
         for (let k = 0; k < spawnCount && particles.length < maxCap; k++) {
           particles.push(createSmokeParticle(c.x, topY, cfg, Math.random(), Math.random()));
         }
@@ -774,16 +686,24 @@ export default function MapPanel({ states, geo, times, slot, onSlot }: Props) {
       const cExceed = cssVar(canvas, "--lv-exceed") || "#e11d74";
       const cRisk = cssVar(canvas, "--lv-risk") || "#ef4444";
       const cNeutral = theme === "light" ? "#64748b" : "#94a3b8";
+      const cOk = theme === "light" ? "#475569" : "#e2e8f0";
 
       for (const p of particles) {
         const alpha = smokeParticleAlpha(p);
         if (alpha <= 0.01) continue;
         const rad = smokeParticleRadius(p);
-        const color = p.colorKind === "exceed" ? cExceed : p.colorKind === "risk" ? cRisk : cNeutral;
+        const color =
+          p.colorKind === "exceed"
+            ? cExceed
+            : p.colorKind === "risk"
+              ? cRisk
+              : p.colorKind === "ok"
+                ? cOk
+                : cNeutral;
         ctx.beginPath();
         ctx.arc(p.x, p.y, rad, 0, Math.PI * 2);
         ctx.fillStyle = color;
-        ctx.globalAlpha = alpha;
+        ctx.globalAlpha = p.colorKind === "ok" ? alpha * 0.88 : alpha;
         ctx.fill();
       }
       ctx.globalAlpha = 1;
@@ -795,7 +715,7 @@ export default function MapPanel({ states, geo, times, slot, onSlot }: Props) {
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     };
-  }, [smokeOn, reducedMotion, isMobile, theme]);
+  }, [reducedMotion, isMobile, theme]);
 
   // 크기: 컨테이너를 따라가고 DPR을 반영한다
   useEffect(() => {
@@ -804,6 +724,7 @@ export default function MapPanel({ states, geo, times, slot, onSlot }: Props) {
     const apply = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const w = wrap.clientWidth, h = wrap.clientHeight;
+      if (w <= 0 || h <= 0) return;
       const prev = sizeRef.current;
       sizeRef.current = { w, h, dpr };
       canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
@@ -861,7 +782,7 @@ export default function MapPanel({ states, geo, times, slot, onSlot }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSiteId]);
 
-  useEffect(() => { schedule(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [states, selectedSiteId, hoveredSiteId, theme, reducedMotion, contourOn, mapLevels, statusFilter, favoritesOnly, favorites, nearby]);
+  useEffect(() => { schedule(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [states, selectedSiteId, hoveredSiteId, theme, reducedMotion, mapLevels, statusFilter, favoritesOnly, favorites, nearby]);
   useEffect(() => { hoverRef.current = -1; setTip(null); setPicker(null); }, [mapLevels, statusFilter, selectedSiteId, favoritesOnly]);
 
   // 새로 경고가 된 굴뚝 번쩍임
@@ -1178,8 +1099,6 @@ export default function MapPanel({ states, geo, times, slot, onSlot }: Props) {
   }), []);
   useEffect(() => () => { modeToken.current++; naverRef.current?.destroy(); naverRef.current = null; }, []);
 
-  const activeLayerCount = (!naverOn && contourOn ? 1 : 0) + (smokeOn ? 1 : 0);
-
   return (
     <div className={styles.panel}>
       <div className={styles.bar}>
@@ -1187,64 +1106,10 @@ export default function MapPanel({ states, geo, times, slot, onSlot }: Props) {
         <nav className={styles.crumbs} aria-label="지도 중앙 위치">
           <span className={styles.crumbHint}>지도 중앙</span>
           <span className={styles.crumbNow} aria-current="location">{mapPath.sido ?? "전국"}</span>
-          {mapPath.sigungu && (<><span aria-hidden="true">›</span><span className={styles.crumbNow}>{mapPath.sigungu}</span></>)}
+          {mapPath.sigungu && (<><span className={styles.crumbSep} aria-hidden="true">›</span><span className={styles.crumbNow}>{mapPath.sigungu}</span></>)}
         </nav>
 
         <div className={styles.right}>
-          {/* 6단계 [1][3]: 레이어 메뉴(농도 분포 · 굴뚝 연기) + 농도 분포 색 막대 */}
-          <div ref={layerWrapRef} className={styles.layerWrap}>
-            <button
-              type="button"
-              className={styles.up}
-              aria-expanded={layerMenuOpen}
-              aria-haspopup="menu"
-              aria-pressed={activeLayerCount > 0}
-              onClick={() => setLayerMenuOpen((v) => !v)}
-            >
-              레이어{activeLayerCount > 0 ? ` (${activeLayerCount})` : ""}
-            </button>
-
-            {!naverOn && contourOn && (
-              <div className={styles.contourScale} role="img" aria-label="농도 분포 색 막대: 낮음에서 높음">
-                <span>낮음</span>
-                <span className={styles.contourBar} aria-hidden="true" />
-                <span>높음</span>
-              </div>
-            )}
-
-            {layerMenuOpen && (
-              <div className={styles.layerMenu} role="menu" aria-label="지도 레이어 설정">
-                <div className={styles.layerMenuTitle}>지도 레이어</div>
-                {!naverOn && (
-                  <label className={styles.layerOption}>
-                    <span>
-                      농도 분포
-                      <span className={styles.layerOptionHint}>지형·분포선 겹쳐 보기</span>
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={contourOn}
-                      aria-label="농도 분포"
-                      onChange={(e) => setContourOn(e.target.checked)}
-                    />
-                  </label>
-                )}
-                <label className={styles.layerOption}>
-                  <span>
-                    굴뚝 연기
-                    <span className={styles.layerOptionHint}>초과·위험 굴뚝 연기 표현</span>
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={smokeOn}
-                    aria-label="굴뚝 연기"
-                    onChange={(e) => setSmokeOn(e.target.checked)}
-                  />
-                </label>
-              </div>
-            )}
-          </div>
-
           {/* 6단계 [2]: 내 주변 버튼 */}
           <button
             type="button"

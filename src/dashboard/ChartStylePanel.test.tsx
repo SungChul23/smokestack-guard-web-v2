@@ -99,13 +99,12 @@ describe("그래프 설정 패널", () => {
     expect(onClose).toHaveBeenCalledTimes(2);
   });
 
-  it("예시 사업장 열기 버튼은 값을 줄 때만 있고 누르면 부른다", async () => {
-    const onPick = vi.fn();
-    const { rerender } = render(<ChartStylePanel open onClose={() => {}} />);
+  it("상단 불필요 버튼(예시 사업장 열기·그래프로 이동·모드 설정 가져오기)은 없고 실시간 미리보기가 보인다", () => {
+    render(<ChartStylePanel open onClose={() => {}} />);
     expect(screen.queryByRole("button", { name: "예시 사업장 열기" })).toBeNull();
-    rerender(<ChartStylePanel open onClose={() => {}} onPickSample={onPick} />);
-    await userEvent.click(screen.getByRole("button", { name: "예시 사업장 열기" }));
-    expect(onPick).toHaveBeenCalled();
+    expect(screen.queryByRole("button", { name: "그래프로 이동" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /모드 설정 가져오기/ })).toBeNull();
+    expect(screen.getByLabelText("실시간 미리보기")).toBeInTheDocument();
   });
 });
 
@@ -388,16 +387,6 @@ describe("다크·라이트 모드별 그래프", () => {
     await theme("dark");
     expect(screen.getByRole("dialog")).toHaveTextContent("그래프 설정 · 다크 모드");
     expect((screen.getByLabelText("굵기") as HTMLInputElement).value).toBe(String(LEGACY_CHART_STYLE.lineWidth));
-  });
-
-  it("다른 모드 설정 가져오기는 반대 모드의 값을 이 모드로 복사한다", async () => {
-    await theme("dark");
-    useChartStyle.getState().set({ lineWidth: 5, noxColor: "#ff00aa" }, "light");
-    render(<ChartStylePanel open onClose={() => {}} />);
-    await userEvent.click(screen.getByRole("button", { name: "라이트 모드 설정 가져오기" }));
-    expect(getStyle("dark").lineWidth).toBe(5);
-    expect(getStyle("dark").noxColor).toBe("#ff00aa");
-    expect(screen.getByRole("status")).toHaveTextContent("라이트 모드의 설정을 다크 모드로 복사했습니다");
   });
 
   it("기본값으로 되돌리기는 지금 모드만 되돌린다", async () => {

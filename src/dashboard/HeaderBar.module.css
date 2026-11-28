@@ -4,7 +4,7 @@
 
 .header {
   position: relative;
-  z-index: 40;
+  z-index: 70;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
@@ -85,6 +85,7 @@
 .freshness[data-status="live"] .dot {
   background: var(--lv-ok);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--lv-ok) 22%, transparent);
+  animation: freshLivePulse 2.4s ease-in-out infinite;
 }
 .freshness[data-status="delayed"] {
   border-color: color-mix(in srgb, var(--lv-caution) 45%, var(--border));
@@ -92,6 +93,7 @@
 }
 .freshness[data-status="delayed"] .dot {
   background: var(--lv-caution);
+  animation: freshWarnBlink 1.8s ease-in-out infinite;
 }
 .freshness[data-status="disconnected"] {
   border-color: color-mix(in srgb, var(--lv-risk) 45%, var(--border));
@@ -99,9 +101,26 @@
 }
 .freshness[data-status="disconnected"] .dot {
   background: var(--lv-risk);
+  animation: freshWarnBlink 1.3s ease-in-out infinite;
 }
 .freshness[data-status="none"] .dot {
   background: var(--lv-none);
+}
+
+@keyframes freshLivePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lv-ok) 24%, transparent);
+  }
+  50% {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--lv-ok) 8%, transparent);
+  }
+}
+
+@keyframes freshWarnBlink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.84); }
 }
 
 .freshShort {
@@ -125,11 +144,16 @@
   white-space: nowrap;
   flex: none;
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  animation: pastBadgePop 220ms var(--ease-out);
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
 }
 .pastBadge:hover {
+  transform: translateY(-1px);
   background: color-mix(in srgb, var(--lv-warn) 26%, var(--panel-solid));
   border-color: var(--lv-warn);
+}
+.pastBadge:active {
+  transform: scale(0.97);
 }
 .pastBadge:focus-visible {
   outline: 2px solid var(--lv-warn);
@@ -142,6 +166,12 @@
   border-radius: 50%;
   background: var(--lv-warn);
   flex: none;
+  animation: freshWarnBlink 1.5s ease-in-out infinite;
+}
+
+@keyframes pastBadgePop {
+  from { opacity: 0; transform: translateY(-4px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .pastShort {
@@ -165,12 +195,18 @@
   font-family: inherit;
   font-size: 16px;
   cursor: pointer;
-  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 }
 
 .searchBtn:hover {
-  border-color: var(--border-strong);
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border-strong));
   color: var(--text);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+}
+
+.searchBtn:active {
+  transform: scale(0.985);
 }
 
 .searchBtn:focus-visible {
@@ -195,6 +231,12 @@
   font-size: 14px;
   line-height: 1.2;
   white-space: nowrap;
+  transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.searchBtn:hover .kbd {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 /* ── 오른쪽: 알림 종 + 인사 + 아바타 메뉴 ── */
@@ -232,23 +274,6 @@
   outline-offset: 2px;
 }
 
-.bellBadge {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 5px;
-  border-radius: var(--r-pill);
-  background: var(--lv-exceed);
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  line-height: 20px;
-  text-align: center;
-}
-
 .userWrap {
   position: relative;
 }
@@ -266,12 +291,18 @@
   font-family: inherit;
   font-size: 16px;
   cursor: pointer;
-  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+  transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 }
 
 .userTrigger:hover {
-  border-color: var(--border-strong);
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border-strong));
   background: var(--panel-elevated);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+}
+
+.userTrigger:active {
+  transform: scale(0.98);
 }
 
 .userTrigger:focus-visible {
@@ -302,12 +333,17 @@
   display: grid;
   place-items: center;
   flex: none;
+  transition: transform var(--dur-fast) var(--ease-spring);
+}
+
+.userTrigger:hover .avatar {
+  transform: scale(1.06);
 }
 
 .chevron {
   color: var(--text-3);
   display: inline-flex;
-  transition: transform var(--dur-fast) var(--ease-out);
+  transition: transform var(--dur) var(--ease-spring);
 }
 
 .userTrigger[aria-expanded="true"] .chevron {
@@ -329,6 +365,19 @@
   flex-direction: column;
   gap: 12px;
   z-index: 60;
+  transform-origin: top right;
+  animation: headerMenuPop 190ms var(--ease-out);
+}
+
+@keyframes headerMenuPop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .menuHead {
@@ -387,11 +436,15 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
-  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 }
 
 .segBtn:hover {
   color: var(--text);
+}
+
+.segBtn:active {
+  transform: scale(0.95);
 }
 
 .segBtn[aria-pressed="true"] {
@@ -462,7 +515,7 @@
   height: 22px;
   border-radius: 50%;
   background: var(--text);
-  transition: transform var(--dur-fast) var(--ease-out);
+  transition: transform 240ms var(--ease-spring), background var(--dur-fast) var(--ease-out);
 }
 
 .switch[aria-checked="true"] .thumb {
@@ -492,11 +545,16 @@
   font-size: 16px;
   cursor: pointer;
   text-align: left;
-  transition: background var(--dur-fast) var(--ease-out);
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
 }
 
 .menuAction:hover {
   background: var(--panel-hover);
+  transform: translateX(3px);
+}
+
+.menuAction:active {
+  transform: scale(0.98);
 }
 
 .menuAction:focus-visible {

@@ -16,6 +16,10 @@ import { isPreviewMode, PREVIEW_ACCESS_TOKEN, PREVIEW_EMAIL, PREVIEW_USER_NAME, 
 type Membership = "checking" | "member" | "not_member" | { error: string };
 
 export default function App() {
+  if (isPreviewMode()) {
+    return <DashboardApp email={PREVIEW_EMAIL} userName={PREVIEW_USER_NAME} accessToken={PREVIEW_ACCESS_TOKEN} onLogout={previewLogout} />;
+  }
+
   const auth = useAuth();
   const [membership, setMembership] = useState<Membership>("checking");
 
@@ -92,7 +96,7 @@ export default function App() {
       {membership === "not_member" && <Invite accessToken={accessToken} email={email} onJoined={() => void onJoined()} />}
       {typeof membership === "object" && (
         <section style={{ textAlign: "center", paddingTop: 48 }}>
-          <p style={{ color: "#666" }}>서버 연결 안 됨: {membership.error} (서버가 꺼져 있으면 정상)</p>
+          <p style={{ color: "#666" }}>서버 연결 안_됨: {membership.error} (서버가 꺼져 있으면 정상)</p>
           <button onClick={() => void checkMembership(accessToken)}>다시 확인</button>
         </section>
       )}

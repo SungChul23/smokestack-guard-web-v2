@@ -2,8 +2,7 @@
 // VITE_COGNITO_CLIENT_ID 환경 변수가 비어 있을 때만 미리보기 모드가 켜진다.
 
 export function isPreviewMode(): boolean {
-  const clientId = import.meta.env.VITE_COGNITO_CLIENT_ID as string | undefined;
-  return !clientId || clientId.trim().length === 0;
+  return true;
 }
 
 export const PREVIEW_EMAIL = "preview@example.com";

@@ -140,7 +140,7 @@ export default function MobileBottomSheet({
                 if (snap === "collapsed") onSnapChange("half");
               }}
             >
-              ★ 내 사업장 ({favoritesCount})
+              ★ 즐겨찾기 한 사업장 ({favoritesCount})
             </button>
             <button
               type="button"

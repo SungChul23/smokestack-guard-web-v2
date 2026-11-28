@@ -1,9 +1,9 @@
-// 상단 머리([추가 2]): 로고(연기 애니메이션) + 워드마크 + 데이터 신선도 + 전국 검색(Ctrl/⌘+K) + 알림 종 + 인사·아바타 메뉴.
+// 상단 머리([추가 2]): 로고(연기 애니메이션) + 워드마크 + 데이터 신선도 + 전국 검색(Ctrl/⌘+K) + 인사·아바타 메뉴.
 import { useEffect, useRef, useState } from "react";
 import { useTheme, type ThemePreference } from "../theme/theme";
 import BrandLogo from "./BrandLogo";
 import { computeFreshness, smokeToneOf, userDisplayName, userInitial } from "./freshness";
-import { AlertIcon, ChevronDownIcon, GearIcon, LogoutIcon, MonitorIcon, MoonIcon, SearchIcon, SunIcon } from "./icons";
+import { ChevronDownIcon, GearIcon, LogoutIcon, MonitorIcon, MoonIcon, SearchIcon, SunIcon } from "./icons";
 import styles from "./HeaderBar.module.css";
 
 export interface UserMenuFieldsProps {
@@ -115,10 +115,9 @@ export interface HeaderBarProps {
   latestMs?: number | null;
   /** 신선도 기준 현재 시각(ms). 미리보기에서 고정 오프셋 주입 가능 */
   freshnessNowMs?: number;
-  /** 최신 전국 단계별 사업장 수 (로고 연기 색 & 알림 종 배지용) */
+  /** 최신 전국 단계별 사업장 수 (로고 연기 색용) */
   latestCounts?: { exceed: number; risk: number } | null;
   onOpenSearch?: () => void;
-  onBellClick?: () => void;
   onOpenSettings?: () => void;
   settingsOpen?: boolean;
   onLogout: () => void;
@@ -135,7 +134,6 @@ export default function HeaderBar({
   freshnessNowMs,
   latestCounts = null,
   onOpenSearch,
-  onBellClick,
   onOpenSettings,
   settingsOpen = false,
   onLogout,
@@ -189,7 +187,6 @@ export default function HeaderBar({
   const nowMs = freshnessNowMs ?? tickNow;
   const fresh = computeFreshness(latestMs, nowMs);
   const tone = smokeToneOf(latestCounts);
-  const urgentCount = (latestCounts?.exceed ?? 0) + (latestCounts?.risk ?? 0);
   const displayName = userDisplayName(userName, email);
   const initial = userInitial(displayName);
 
@@ -240,23 +237,8 @@ export default function HeaderBar({
         </button>
       </div>
 
-      {/* 오른쪽(데스크톱·태블릿): 알림 종 + 인사 + 아바타 메뉴 */}
+      {/* 오른쪽(데스크톱·태블릿): 인사 + 아바타 메뉴 */}
       <div className={styles.actions}>
-        <button
-          type="button"
-          className={styles.iconBtn}
-          aria-label={urgentCount > 0 ? `초과·위험 알림, ${urgentCount}곳` : "초과·위험 알림 없음"}
-          title={urgentCount > 0 ? `초과·위험 ${urgentCount}곳` : "초과·위험 없음"}
-          onClick={onBellClick}
-        >
-          <AlertIcon />
-          {urgentCount > 0 && (
-            <span className={styles.bellBadge} aria-hidden="true">
-              {urgentCount}
-            </span>
-          )}
-        </button>
-
         <div className={styles.userWrap} ref={menuWrapRef}>
           <button
             type="button"

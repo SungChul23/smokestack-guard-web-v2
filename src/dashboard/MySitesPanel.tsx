@@ -46,7 +46,7 @@ export default function MySitesPanel({ states, day, slot }: Props) {
   }
 
   return (
-    <ul ref={wrapRef} className={styles.list} aria-label="내 사업장 목록">
+    <ul ref={wrapRef} className={styles.list} aria-label="즐겨찾기 한 사업장 목록">
       {states.map((st) => {
         const detail = worstDetailAt(st.site, day, slot);
         const spark = recentSparkline(st.site, day, slot, 12);

@@ -142,8 +142,12 @@ describe("App 미리보기 진입", () => {
     renderApp();
     const userBtn = await screen.findByRole("button", { name: /사용자 메뉴 \(미리보기님\)/ });
     expect(userBtn).toBeInTheDocument();
-    const banner = await screen.findByRole("region", { name: "초과 공지" });
-    expect(within(banner).getByRole("button", { name: /가나에너지/ })).toBeInTheDocument();
+    const header = screen.getByRole("banner");
+    const liveBtn = await within(header).findByRole("button", { name: /실시간 LIVE/ });
+    expect(liveBtn).toHaveAttribute("data-status", "live");
+    expect(liveBtn).toHaveAttribute("data-pulsing", "true");
+    expect(liveBtn).toHaveTextContent("초과 3 · 공지 12");
+    expect(screen.queryByRole("region", { name: "초과 공지" })).toBeNull();
     const list = await screen.findByRole("list", { name: "경고 목록" });
     expect(within(list).getAllByRole("listitem").length).toBeGreaterThanOrEqual(3);
   });

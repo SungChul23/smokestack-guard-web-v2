@@ -247,6 +247,7 @@ export default function SiteDetailDrawer({ site, sites, day, slot, onClose, onAs
 
       {/* ── 4. 활성 탭 패널 ── */}
       <div
+        key={tab}
         id={`detail-panel-${tab}`}
         role="tabpanel"
         aria-labelledby={`detail-tab-${tab}`}

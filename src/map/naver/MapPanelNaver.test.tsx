@@ -94,18 +94,15 @@ describe("지도 종류 선택 막대", () => {
     // 윗줄을 늘리지 않는다: 상태 칩과 같은 오른쪽 묶음
     expect(group.parentElement).toBe(screen.getByRole("group", { name: "지도에 표시할 상태" }).parentElement);
     expect(scripts()).toHaveLength(0); // 네이버를 고르기 전에는 SDK를 읽지 않는다
-    await userEvent.click(screen.getByRole("button", { name: /^레이어/ }));
-    expect(screen.getByRole("checkbox", { name: "농도 분포" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^레이어/ })).toBeNull();
   });
 
-  it("일반 지도를 고르면 지도가 한 번 만들어지고 기본 지도의 농도 분포 옵션은 숨는다", async () => {
+  it("일반 지도를 고르면 지도가 한 번 만들어지고 오버레이 모드로 바뀐다", async () => {
     renderPanel();
     await enter("일반 지도");
     expect(fake.maps).toHaveLength(1);
     expect(fake.maps[0].typeId).toBe("normal");
     expect(kind("기본 지도")).toHaveAttribute("aria-pressed", "false");
-    await userEvent.click(screen.getByRole("button", { name: /^레이어/ }));
-    expect(screen.queryByRole("checkbox", { name: "농도 분포" })).toBeNull();
     expect(screen.getByRole("button", { name: "전국 보기" })).toBeInTheDocument();
     expect(window.localStorage.getItem(MODE_KEY)).toBe("normal");
     expect(screen.queryByRole("status")).toBeNull(); // 불러오는 중 안내는 끝나면 사라진다
@@ -127,7 +124,7 @@ describe("지도 종류 선택 막대", () => {
     expect(fake.maps).toHaveLength(1);
   });
 
-  it("기본 지도로 돌아오면 네이버 지도를 없애고 농도 분포 옵션이 돌아오며 저장값을 지운다", async () => {
+  it("기본 지도로 돌아오면 네이버 지도를 없애고 저장값을 지운다", async () => {
     renderPanel();
     await enter("일반 지도");
     const map = fake.maps[0];
@@ -135,8 +132,6 @@ describe("지도 종류 선택 막대", () => {
     expect(map.destroyed).toBe(true);
     expect(fake.liveListeners(map)).toBe(0);
     expect(kind("기본 지도")).toHaveAttribute("aria-pressed", "true");
-    await userEvent.click(screen.getByRole("button", { name: /^레이어/ }));
-    expect(screen.getByRole("checkbox", { name: "농도 분포" })).toBeInTheDocument();
     expect(window.localStorage.getItem(MODE_KEY)).toBeNull();
     expect(screen.getByRole("img", { name: /굴뚝 .*곳을 보여 주는 지도/ }).className).not.toMatch(/overlay/);
   });
@@ -206,8 +201,6 @@ describe("실패하면 기본 지도를 계속 쓴다", () => {
     expect(map.destroyed).toBe(true);
     expect(kind("기본 지도")).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("status")).toHaveTextContent("허용된 도메인");
-    await userEvent.click(screen.getByRole("button", { name: /^레이어/ }));
-    expect(screen.getByRole("checkbox", { name: "농도 분포" })).toBeInTheDocument();
     // 같은 화면에서는 다시 골라도 소용없으니 지도를 만들지 않는다
     await userEvent.click(kind("위성 지도"));
     await settle();

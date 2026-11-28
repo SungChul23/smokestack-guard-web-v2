@@ -67,9 +67,10 @@ describe("관제 화면 공통 틀(2단계 · 레일 없음)", () => {
     expect(screen.getByText(/데이터 연결 전/)).toBeInTheDocument();
   });
 
-  it("최신 초과+위험 개수가 알림 종 배지와 로고 연기 색에 반영된다", () => {
+  it("최신 초과+위험 개수가 로고 연기 색에 반영되고 상단 알림 종 버튼은 없다", () => {
     setup({ latestCounts: { exceed: 3, risk: 2 } });
-    expect(screen.getByRole("button", { name: "초과·위험 알림, 5곳" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /초과·위험 알림/ })).toBeNull();
+    expect(screen.getByRole("heading", { level: 2, name: "즐겨찾기 한 사업장" })).toBeInTheDocument();
     const logo = document.querySelector("[data-tone]");
     expect(logo?.getAttribute("data-tone")).toBe("exceed");
   });

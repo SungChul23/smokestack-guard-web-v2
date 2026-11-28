@@ -139,7 +139,7 @@ describe("관제 화면 통합", () => {
     await userEvent.click(within(list).getByText("가나다공장"));
     await userEvent.click(await screen.findByRole("button", { name: "가나다공장 즐겨찾기" }));
     expect(useSelection.getState().favorites).toEqual(["S1"]);
-    const favList = await screen.findByRole("list", { name: "내 사업장 목록" });
+    const favList = await screen.findByRole("list", { name: "즐겨찾기 한 사업장 목록" });
     expect(favList).toHaveTextContent("가나다공장");
     const rows = within(screen.getByRole("list", { name: "경고 목록" })).getAllByRole("listitem");
     expect(rows[0]).toHaveTextContent("라마바공장");
@@ -498,20 +498,31 @@ describe("공지: 롤링 배너와 스티커(최신 데이터 기준)", () => {
     fireEvent.change(slider, { target: { value: "0" } });
     expect(screen.getByRole("region", { name: "초과 공지" })).toBeInTheDocument();
   });
+
+  it("배너의 전체보기를 누르면 전체 경보 공지 페이지가 열리고 항목을 누르면 해당 사업장이 선택된다", async () => {
+    setup();
+    const banner = await screen.findByRole("region", { name: "초과 공지" });
+    await userEvent.click(within(banner).getByRole("button", { name: "전체보기" }));
+    const page = await screen.findByRole("dialog", { name: "전체 경보 공지" });
+    expect(within(page).getByText("LIVE")).toBeInTheDocument();
+    await userEvent.click(within(page).getByRole("button", { name: /라마바공장/ }));
+    expect(screen.queryByRole("dialog", { name: "전체 경보 공지" })).toBeNull();
+    expect(useSelection.getState().selectedSiteId).toBe("S2");
+  });
 });
 
 describe("사용자 메뉴 → 그래프 설정", () => {
-  it("사용자 메뉴에서 그래프 설정 패널을 열고 닫고, 예시 사업장을 열면 그래프가 나온다", async () => {
+  it("사용자 메뉴에서 그래프 설정 창을 열고 실시간 미리보기를 확인한 뒤 닫는다", async () => {
     setup();
     await screen.findByRole("list", { name: "경고 목록" });
     expect(screen.queryByRole("dialog", { name: "그래프 설정" })).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: /사용자 메뉴/ }));
     await userEvent.click(screen.getByRole("button", { name: "그래프 설정" }));
-    expect(screen.getByRole("dialog", { name: "그래프 설정" })).toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: "추세 차트" })).toBeNull(); // 사업장을 아직 안 골랐다
-    await userEvent.click(screen.getByRole("button", { name: "예시 사업장 열기" }));
-    expect(useSelection.getState().selectedSiteId).toBe("S2"); // 지금 초과인 첫 사업장
-    expect(await screen.findByRole("region", { name: "추세 차트" })).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog", { name: "그래프 설정" });
+    expect(dialog).toBeInTheDocument();
+    expect(within(dialog).getByLabelText("실시간 미리보기")).toBeInTheDocument();
+    expect(within(dialog).queryByRole("button", { name: "예시 사업장 열기" })).toBeNull();
+    expect(within(dialog).queryByRole("button", { name: "그래프로 이동" })).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "그래프 설정 닫기" }));
     expect(screen.queryByRole("dialog", { name: "그래프 설정" })).toBeNull();
   });

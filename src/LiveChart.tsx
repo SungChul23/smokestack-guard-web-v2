@@ -83,7 +83,7 @@ export default function LiveChart({ onLevel }: { onLevel?: (level: Level, value:
   const line = series.map((v, i) => `${i ? "L" : "M"}${xOf(i).toFixed(1)},${yOf(v).toFixed(1)}`).join(" ");
   const area = `${line} L${xOf(N - 1).toFixed(1)},${H - PAD_Y} L${PAD_X},${H - PAD_Y} Z`;
   const fc = [last, ...forecast].map((v, i) => `${i ? "L" : "M"}${xOf(N - 1 + i).toFixed(1)},${yOf(v).toFixed(1)}`).join(" ");
-  const color = level === "alarm" ? "#ef5a43" : level === "warn" ? "#f0a14a" : "#3fbf93";
+  const color = level === "alarm" ? "#ef4444" : level === "warn" ? "#fb923c" : "#38bdf8";
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="기준 대비 비율이 오르다 주의선과 기준선을 넘고 다시 내려가는 예시 그래프">
@@ -93,29 +93,29 @@ export default function LiveChart({ onLevel }: { onLevel?: (level: Level, value:
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
         <linearGradient id="lc-alarm-zone" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor="#ef5a43" stopOpacity="0.22" />
-          <stop offset="100%" stopColor="#ef5a43" stopOpacity="0.04" />
+          <stop offset="0%" stopColor="#ef4444" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="#ef4444" stopOpacity="0.04" />
         </linearGradient>
       </defs>
 
       <rect x={PAD_X} y={PAD_Y} width={W - PAD_X * 2} height={yOf(100) - PAD_Y} fill="url(#lc-alarm-zone)" className="lc-zone" />
       <rect x={xOf(N - 1)} y={PAD_Y} width={W - PAD_X - xOf(N - 1)} height={H - PAD_Y * 2} fill="rgba(255,255,255,0.03)" />
-      <text x={xOf(N - 1) + 4} y={H - PAD_Y - 4} fontSize="9" fill="#7f9690">AI 예측</text>
+      <text x={xOf(N - 1) + 4} y={H - PAD_Y - 4} fontSize="9" fill="#9aa7b4">AI 예측</text>
 
       {[70, 80].map((g) => (
         <line key={g} x1={PAD_X} x2={W - PAD_X} y1={yOf(g)} y2={yOf(g)} stroke="var(--chart-grid)" strokeWidth="1" />
       ))}
-      <line x1={PAD_X} x2={W - PAD_X} y1={yOf(100)} y2={yOf(100)} stroke="#ef5a43" strokeWidth="1.5" strokeDasharray="5 4" />
-      <text x={PAD_X + 2} y={yOf(100) - 5} fontSize="10" fill="#f08a78">배출허용기준 100%</text>
-      <line x1={PAD_X} x2={W - PAD_X} y1={yOf(90)} y2={yOf(90)} stroke="#f0a14a" strokeWidth="1" strokeDasharray="2 4" />
-      <text x={PAD_X + 2} y={yOf(90) + 12} fontSize="10" fill="#f0b46e">주의 90%</text>
+      <line x1={PAD_X} x2={W - PAD_X} y1={yOf(100)} y2={yOf(100)} stroke="#ef4444" strokeWidth="1.5" strokeDasharray="5 4" />
+      <text x={PAD_X + 2} y={yOf(100) - 5} fontSize="10" fill="#f87171">배출허용기준 100%</text>
+      <line x1={PAD_X} x2={W - PAD_X} y1={yOf(90)} y2={yOf(90)} stroke="#fb923c" strokeWidth="1" strokeDasharray="2 4" />
+      <text x={PAD_X + 2} y={yOf(90) + 12} fontSize="10" fill="#fdba74">주의 90%</text>
 
       <path d={area} fill="url(#lc-fill)" className="lc-area" />
       <path d={line} fill="none" stroke={color} strokeWidth="2.2" strokeLinejoin="round" className="lc-line" />
       <path d={fc} fill="none" stroke={color} strokeWidth="1.8" strokeDasharray="3 4" opacity="0.75" />
 
       <circle cx={xOf(N - 1)} cy={yOf(last)} r="10" fill={color} className="lc-ping" />
-      <circle cx={xOf(N - 1)} cy={yOf(last)} r="4.5" fill={color} stroke="#0a110f" strokeWidth="1.5" />
+      <circle cx={xOf(N - 1)} cy={yOf(last)} r="4.5" fill={color} stroke="#0e141b" strokeWidth="1.5" />
     </svg>
   );
 }

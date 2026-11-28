@@ -1,6 +1,6 @@
 // 그래프 설정 창: 사용자 메뉴에서 여는 넓은 불투명 모달 창.
-// 바꾸는 즉시 추세 그래프에 반영되고 이 브라우저에 다크·라이트 모드별로 저장된다.
-// 값은 JSON으로 복사·붙여 넣기 할 수 있고, 사업장을 고르지 않았다면 "예시 사업장 열기"로 바로 띄울 수 있다.
+// 바꾸는 즉시 왼쪽 미리보기와 추세 그래프에 반영되고 이 브라우저에 다크·라이트 모드별로 저장된다.
+// 값은 JSON으로 복사·붙여 넣기 할 수 있다.
 import { useEffect, useRef, useState } from "react";
 import type { DayData, Pollutant, Site } from "../data/model";
 import { changedCount, defaultsFor, RANGES, useActiveStyle, useChartStyle, type ChartStyle, type ColorKey } from "../state/chartStyle";
@@ -108,13 +108,11 @@ function ColorPick({ label, k, cssVar, fallback, follow }: { label: string; k: C
   );
 }
 
-export default function ChartStylePanel({ open, onClose, onPickSample }: { open: boolean; onClose: () => void; onPickSample?: () => void }) {
+export default function ChartStylePanel({ open, onClose }: { open: boolean; onClose: () => void }) {
   const theme = useThemeName();
-  const other: ThemeName = theme === "dark" ? "light" : "dark";
   const { style } = useActiveStyle();
   const reset = useChartStyle((s) => s.reset);
   const replace = useChartStyle((s) => s.replace);
-  const copyFrom = useChartStyle((s) => s.copyFrom);
   const [note, setNote] = useState("");
   const [paste, setPaste] = useState<string | null>(null);
   const [previewPolls, setPreviewPolls] = useState<Pollutant[]>(["nox", "sox"]);
@@ -176,29 +174,6 @@ export default function ChartStylePanel({ open, onClose, onPickSample }: { open:
         </header>
 
         <div className={styles.toolbar}>
-          <div className={styles.actions}>
-            {onPickSample && <button type="button" className={styles.btnPrimary} onClick={onPickSample}>예시 사업장 열기</button>}
-            <button
-              type="button"
-              className={styles.btn}
-              onClick={() => {
-                onClose();
-                document.getElementById("trend")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
-              }}
-            >
-              그래프로 이동
-            </button>
-            <button
-              type="button"
-              className={styles.btn}
-              onClick={() => {
-                copyFrom(other);
-                setNote(`${MODE_NAME[other]} 모드의 설정을 ${MODE_NAME[theme]} 모드로 복사했습니다.`);
-              }}
-            >
-              {MODE_NAME[other]} 모드 설정 가져오기
-            </button>
-          </div>
           <p className={styles.toolbarHint}>
             바꾸면 왼쪽 미리보기와 실제 그래프에 바로 반영됩니다. <strong>다크·라이트 모드는 설정이 따로</strong> 저장됩니다.
           </p>

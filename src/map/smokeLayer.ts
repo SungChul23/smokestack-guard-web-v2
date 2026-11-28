@@ -1,10 +1,10 @@
-// 굴뚝 연기 레이어 계산(순수 함수 · 6단계 [3]).
-// - 기본 꺼짐, 레이어 메뉴에서 켤 때만 동작한다.
-// - 비율이 높을수록 양과 상승 속도가 크고(초과 가장 큼), 정상(ok)·측정 없음(null)은 연기를 내지 않는다.
-// - 색은 단계 기운(초과 진홍, 위험 빨강, 주의·경고 연회색). 휴대폰은 입자 수를 절반으로 줄인다.
+// 굴뚝 연기 레이어 계산(순수 함수).
+// - 기본 켜짐이며, 화면 효과 끄기·움직임 줄이기 설정에서 다른 애니메이션과 함께 멈춘다.
+// - 비율이 높을수록 양과 상승 속도가 크고(초과 가장 큼), 정상(ok)도 은은한 연기를 낸다. 측정 없음(null)만 연기를 내지 않는다.
+// - 색은 단계 기운(초과 진홍, 위험 빨강, 주의·경고 연회색, 정상 연한 수증기). 휴대폰은 입자 수를 절반으로 줄인다.
 import type { LevelKey } from "../logic/status";
 
-export type SmokeColorKind = "exceed" | "risk" | "neutral";
+export type SmokeColorKind = "exceed" | "risk" | "neutral" | "ok";
 
 export interface SmokeEmitterConfig {
   /** 초당 생성 입자 수 */
@@ -34,59 +34,71 @@ export interface SmokeParticle {
 }
 
 export function maxSmokeParticles(isMobile: boolean): number {
-  return isMobile ? 84 : 168;
+  return isMobile ? 110 : 220;
 }
 
 /**
  * 사업장 단계·비율에 따른 연기 방출 설정.
- * 정상(ok)이나 측정 없음(null)은 연기를 내지 않는다(null 반환).
+ * 정상(ok)도 은은한 연기를 내고, 측정 없음(null)만 연기를 내지 않는다(null 반환).
  */
 export function smokeConfigFor(
   level: LevelKey | null,
   ratio: number | null,
   isMobile: boolean,
 ): SmokeEmitterConfig | null {
-  if (!level || level === "ok") return null;
-  const r = Math.min(160, Math.max(70, ratio ?? 75));
-  const factor = (r - 70) / 90; // 0..1
+  if (!level) return null;
 
   let cfg: SmokeEmitterConfig;
-  if (level === "exceed") {
+  if (level === "ok") {
+    const okFactor = Math.min(1, Math.max(0, (ratio ?? 35) / 70));
     cfg = {
-      spawnRate: 3.8 + factor * 2.2,
-      riseSpeed: 32 + factor * 16,
-      startRadius: 4.5,
-      endRadius: 19,
-      lifeSec: 2.3,
-      colorKind: "exceed",
-    };
-  } else if (level === "risk") {
-    cfg = {
-      spawnRate: 2.5 + factor * 1.3,
-      riseSpeed: 24 + factor * 10,
-      startRadius: 4,
-      endRadius: 16,
-      lifeSec: 2.1,
-      colorKind: "risk",
-    };
-  } else if (level === "warn") {
-    cfg = {
-      spawnRate: 1.5 + factor * 0.7,
-      riseSpeed: 19 + factor * 6,
+      spawnRate: 1.2 + okFactor * 0.3,
+      riseSpeed: 15 + okFactor * 3,
       startRadius: 3.5,
       endRadius: 13.5,
-      lifeSec: 1.9,
-      colorKind: "neutral",
+      lifeSec: 2.0,
+      colorKind: "ok",
     };
   } else {
-    cfg = {
-      spawnRate: 0.9 + factor * 0.5,
-      riseSpeed: 14 + factor * 5,
-      startRadius: 3,
-      endRadius: 11.5,
-      lifeSec: 1.75,
-      colorKind: "neutral",
-    };
+    const r = Math.min(160, Math.max(70, ratio ?? 75));
+    const factor = (r - 70) / 90; // 0..1
+    if (level === "exceed") {
+      cfg = {
+        spawnRate: 4.2 + factor * 2.0,
+        riseSpeed: 34 + factor * 16,
+        startRadius: 4.6,
+        endRadius: 19.5,
+        lifeSec: 2.3,
+        colorKind: "exceed",
+      };
+    } else if (level === "risk") {
+      cfg = {
+        spawnRate: 3.0 + factor * 1.2,
+        riseSpeed: 28 + factor * 10,
+        startRadius: 4.2,
+        endRadius: 17,
+        lifeSec: 2.15,
+        colorKind: "risk",
+      };
+    } else if (level === "warn") {
+      cfg = {
+        spawnRate: 2.2 + factor * 0.7,
+        riseSpeed: 23 + factor * 6,
+        startRadius: 3.9,
+        endRadius: 15.5,
+        lifeSec: 2.05,
+        colorKind: "neutral",
+      };
+    } else {
+      cfg = {
+        spawnRate: 1.6 + factor * 0.5,
+        riseSpeed: 19 + factor * 5,
+        startRadius: 3.7,
+        endRadius: 14.5,
+        lifeSec: 2.0,
+        colorKind: "neutral",
+      };
+    }
   }
 
   if (isMobile) {

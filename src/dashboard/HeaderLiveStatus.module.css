@@ -1,0 +1,307 @@
+/* 상단 헤더 실시간 LIVE 표시 + 전체 공지 진입 컨트롤
+   - 실시간(live) 시 빨간 LIVE 배지와 동심원 펄스 애니메이션을 표시한다.
+   - 모든 글자 14px 이상, 단선(single-line) 유지, 애니메이션은 transform/opacity만 사용.
+   - 화면 효과 끄기·문서 숨김·움직임 줄이기 설정에서 펄스를 즉시 정지한다. */
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 12px 0 6px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  background: var(--panel-solid);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex: none;
+  max-width: 100%;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+button.trigger {
+  cursor: pointer;
+}
+
+button.trigger:hover {
+  border-color: var(--border-strong);
+  background: var(--panel-elevated);
+}
+
+button.trigger[data-status="live"]:hover {
+  border-color: rgba(239, 68, 68, 0.55);
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.18);
+}
+
+button.trigger:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.trigger[data-status="delayed"] {
+  border-color: color-mix(in srgb, var(--lv-caution) 48%, var(--border));
+}
+
+.trigger[data-status="disconnected"] {
+  border-color: color-mix(in srgb, var(--lv-risk) 50%, var(--border));
+}
+
+.trigger[data-compact="true"] {
+  height: 40px;
+  padding: 0 10px 0 5px;
+  gap: 8px;
+}
+
+/* ── 빨간 LIVE 배지 + 펄스 ── */
+.livePill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding: 0 11px;
+  border-radius: var(--r-pill);
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  flex: none;
+  box-shadow: 0 0 14px -2px rgba(220, 38, 38, 0.65);
+}
+
+.trigger[data-status="delayed"] .livePill {
+  background: #d97706;
+  color: #ffffff;
+  letter-spacing: 0.01em;
+  box-shadow: 0 0 10px -2px rgba(217, 119, 6, 0.45);
+}
+
+.trigger[data-status="disconnected"] .livePill {
+  background: color-mix(in srgb, var(--lv-risk) 18%, var(--bg));
+  color: var(--lv-risk);
+  border: 1px solid color-mix(in srgb, var(--lv-risk) 45%, transparent);
+  letter-spacing: 0.01em;
+  box-shadow: none;
+}
+
+.trigger[data-status="none"] .livePill {
+  background: var(--bg);
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  letter-spacing: 0.01em;
+  box-shadow: none;
+}
+
+.beacon {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+}
+
+.beaconCore {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffffff;
+  position: relative;
+  z-index: 1;
+}
+
+.trigger[data-status="disconnected"] .beaconCore {
+  background: var(--lv-risk);
+}
+
+.trigger[data-status="none"] .beaconCore {
+  background: var(--lv-none);
+}
+
+.beaconRing {
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+}
+
+.trigger[data-pulsing="true"] .beaconCore {
+  animation: liveDotBeat 1.5s ease-in-out infinite;
+}
+
+.trigger[data-pulsing="true"] .beaconRing {
+  animation: livePulseRing 1.5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.trigger[data-status="delayed"][data-pulsing="true"] .beaconCore,
+.trigger[data-status="delayed"][data-pulsing="true"] .beaconRing {
+  animation-duration: 2.4s;
+}
+
+@keyframes liveDotBeat {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(0.82);
+  }
+}
+
+@keyframes livePulseRing {
+  0% {
+    opacity: 0.85;
+    transform: scale(0.7);
+  }
+  75% {
+    opacity: 0;
+    transform: scale(2.15);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.15);
+  }
+}
+
+:global(:root[data-effects="off"]) .beaconCore,
+:global(:root[data-effects="off"]) .beaconRing,
+:global(:root[data-doc-hidden="true"]) .beaconCore,
+:global(:root[data-doc-hidden="true"]) .beaconRing {
+  animation: none !important;
+}
+
+:global(:root[data-effects="off"]) .beaconRing,
+:global(:root[data-doc-hidden="true"]) .beaconRing {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beaconCore,
+  .beaconRing {
+    animation: none !important;
+  }
+  .beaconRing {
+    opacity: 0;
+  }
+}
+
+/* ── 시각 · 공지 요약 텍스트 ── */
+.timeFull {
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.timeShort {
+  display: none;
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border-strong);
+  flex: none;
+}
+
+.noticeFull {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.noticeShort {
+  display: none;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.noticeFull[data-exceed="true"],
+.noticeShort[data-exceed="true"] {
+  color: var(--lv-exceed);
+}
+
+.arrow {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-3);
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 700;
+  transition: transform var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+button.trigger:hover .arrow {
+  color: var(--text);
+  transform: translateX(2px);
+}
+
+.mobileCount {
+  display: none;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--lv-exceed);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 태블릿 (641~1279px) ── */
+@media (max-width: 1279px) {
+  .trigger {
+    gap: 8px;
+    padding: 0 10px 0 5px;
+  }
+  .timeFull,
+  .noticeFull {
+    display: none;
+  }
+  .timeShort,
+  .noticeShort {
+    display: inline;
+  }
+}
+
+/* ── 휴대폰 (≤640px) ── */
+@media (max-width: 640px) {
+  .trigger {
+    height: 36px;
+    padding: 0 10px 0 4px;
+    gap: 6px;
+    min-width: 44px;
+  }
+  .livePill {
+    height: 26px;
+    padding: 0 9px;
+    gap: 5px;
+    font-size: 14px;
+  }
+  .timeFull,
+  .timeShort,
+  .divider,
+  .noticeFull,
+  .noticeShort,
+  .arrow {
+    display: none;
+  }
+  .mobileCount {
+    display: inline;
+  }
+}

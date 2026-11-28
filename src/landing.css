@@ -1,23 +1,23 @@
 /* 로그인 전 첫 화면 (013). D가 대시보드 디자인을 정하면 맞춰 바꿔도 된다.
    기본은 다크, 오른쪽 위 버튼으로 라이트(.theme-light)로 바꾼다. */
 .landing {
-  --bg: #0b1210;
-  --panel: #121c19;
-  --ink: #e9f1ed;
-  --muted: #93a49d;
-  --line: #22312c;
-  --accent: #3fbf93;
-  --warn: #e08a2c;
-  --danger: #e04b35;
-  --siren-blue: #3d7bff;
-  --chart-bg: #0a110f;
-  --chart-grid: #1a2925;
+  --bg: #0b0f14;
+  --panel: #141a22;
+  --ink: #e6edf3;
+  --muted: #9aa7b4;
+  --line: rgba(255, 255, 255, 0.12);
+  --accent: #38bdf8;
+  --warn: #fb923c;
+  --danger: #ef4444;
+  --siren-blue: #38bdf8;
+  --chart-bg: #0e141b;
+  --chart-grid: #1f2937;
   color-scheme: dark;
   position: relative;
   min-height: 100vh;
   overflow-x: hidden;
   background:
-    radial-gradient(900px 500px at 85% -10%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%),
+    radial-gradient(900px 500px at 85% -10%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
     var(--bg);
   color: var(--ink);
   font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
@@ -26,14 +26,17 @@
   transition: background-color 0.6s ease;
 }
 .landing.theme-light {
-  --bg: #f4f6f5;
+  --bg: #f5f7fa;
   --panel: #ffffff;
-  --ink: #15211d;
-  --muted: #5b6b65;
-  --line: #dde3e0;
-  --accent: #0f7a5c;
-  --chart-bg: #0f1a17;
-  --chart-grid: #233530;
+  --ink: #0f172a;
+  --muted: #475569;
+  --line: rgba(15, 23, 42, 0.14);
+  --accent: #0284c7;
+  --warn: #c2410c;
+  --danger: #dc2626;
+  --siren-blue: #0284c7;
+  --chart-bg: #0e141b;
+  --chart-grid: #1f2937;
   color-scheme: light;
 }
 
@@ -276,7 +279,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(110deg, transparent 30%, rgba(63, 191, 147, 0.18) 50%, transparent 70%);
+  background: linear-gradient(110deg, transparent 30%, rgba(56, 189, 248, 0.22) 50%, transparent 70%);
   transform: translateX(-100%);
   animation: shine 3.6s ease-in-out 1.2s infinite;
 }
@@ -296,7 +299,7 @@
   border: 1px solid var(--line);
   border-radius: 18px;
   padding: 18px;
-  box-shadow: 0 30px 60px -30px rgba(10, 20, 17, 0.5);
+  box-shadow: 0 30px 60px -30px rgba(5, 9, 14, 0.55);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 .preview.level-warn { border-color: color-mix(in srgb, var(--warn) 60%, var(--line)); }

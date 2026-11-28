@@ -87,6 +87,14 @@ describe("롤링 배너", () => {
     await userEvent.click(screen.getByRole("button", { name: "이전 공지" }));
     expect(screen.getByRole("button", { name: /다공장/ })).toBeInTheDocument(); // 처음에서 이전은 끝으로
   });
+
+  it("빨간 LIVE 배지와 전체보기 버튼이 보이고, 전체보기를 누르면 onViewAll을 부른다", async () => {
+    const onViewAll = vi.fn();
+    render(<NoticeBanner items={three} onPick={() => {}} onViewAll={onViewAll} />);
+    expect(screen.getByText("LIVE")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "전체보기" }));
+    expect(onViewAll).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe("스티커(즐겨찾기 공지)", () => {
