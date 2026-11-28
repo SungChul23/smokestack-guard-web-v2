@@ -1,0 +1,85 @@
+name: deploy
+
+# 화면 배포 (smokestack-guard #94). PR·push 모두 시험·빌드, main push만 S3 업로드 + index.html 캐시 무효화.
+# 배포 역할 tms-github-web-deploy는 smokestack-guard의 infra/stacks/tms-app이 만든다(이 저장소 main만 믿음).
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-2
+  DEPLOY_ROLE_ARN: arn:aws:iam::952900391026:role/tms-github-web-deploy
+  WEB_BUCKET: smokestack-tms-web-952900391026
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 운영에 가짜 데이터가 나가지 않게: 미리보기 판정은 Cognito 값 유무로만 해야 한다(AI Studio가 true로 되돌리면 막는다)
+      - name: Guard preview mode
+        run: |
+          grep -q 'return !import.meta.env.VITE_COGNITO_CLIENT_ID;' src/preview/mode.ts || {
+            echo "::error file=src/preview/mode.ts::isPreviewMode()는 'return !import.meta.env.VITE_COGNITO_CLIENT_ID;'여야 한다(항상 true면 운영에 가짜 데이터가 나감)"
+            exit 1
+          }
+
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run test
+      - run: bun run build
+        env:
+          VITE_COGNITO_USER_POOL_ID: ap-northeast-2_ci
+          VITE_COGNITO_CLIENT_ID: ci
+          VITE_COGNITO_DOMAIN: ci.example.com
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: deploy-web
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 로그인 설정값(비밀 아님)을 SSM에서 읽어 빌드에 넣는다 (smokestack-guard tms-serving이 기록)
+      - name: Read app config
+        run: |
+          get() { aws ssm get-parameter --name "/tms/app/config/$1" --query Parameter.Value --output text; }
+          {
+            echo "VITE_COGNITO_USER_POOL_ID=$(get cognito-user-pool-id)"
+            echo "VITE_COGNITO_CLIENT_ID=$(get cognito-client-id)"
+            echo "VITE_COGNITO_DOMAIN=$(get cognito-domain)"
+            echo "VITE_API_BASE=https://api.smokestack-guard.store"
+            echo "DIST_ID=$(get web-distribution-id)"
+          } >> "$GITHUB_ENV"
+
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+
+      # 해시가 붙은 파일은 1년 캐시, index.html은 캐시하지 않는다
+      - name: Upload
+        run: |
+          aws s3 sync dist "s3://${WEB_BUCKET}/" --delete --exclude index.html \
+            --cache-control "public, max-age=31536000, immutable"
+          aws s3 cp dist/index.html "s3://${WEB_BUCKET}/index.html" \
+            --cache-control "no-cache" --content-type "text/html; charset=utf-8"
+
+      - name: Invalidate index.html
+        run: aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths "/index.html" "/"
