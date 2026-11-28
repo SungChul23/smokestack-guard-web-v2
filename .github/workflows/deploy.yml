@@ -31,7 +31,9 @@ jobs:
           }
 
       - uses: oven-sh/setup-bun@v2
-      - run: bun install --frozen-lockfile
+      # AI Studio는 package.json만 바꾸고 bun.lock은 갱신하지 않는 일이 있어 잠금 고정(--frozen-lockfile)을 쓰지 않는다.
+      # package.json의 범위(^) 안에서 받으며, 실행마다 버전이 조금 달라질 수 있다.
+      - run: bun install
       - run: bun run test
       - run: bun run build
         env:
@@ -70,7 +72,7 @@ jobs:
             echo "DIST_ID=$(get web-distribution-id)"
           } >> "$GITHUB_ENV"
 
-      - run: bun install --frozen-lockfile
+      - run: bun install
       - run: bun run build
 
       # 해시가 붙은 파일은 1년 캐시, index.html은 캐시하지 않는다
